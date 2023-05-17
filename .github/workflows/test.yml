@@ -30,5 +30,10 @@ jobs:
       - name: 🕵️ Analyze
         run: dart analyze lib test
 
-      - name: 🧪 Run Tests
-        run: dart test -j 4 --test-randomize-ordering-seed random
+      - name: 🧪 Run Tests with Coverage
+        run: |
+          dart test -j 4 --test-randomize-ordering-seed random --coverage=coverage
+          format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib
+
+      - name: 📊 Code Coverage
+        run: cover check
