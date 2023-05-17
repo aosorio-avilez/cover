@@ -20,6 +20,9 @@ jobs:
         uses: dart-lang/setup-dart@v1
         with:
           sdk: "stable"
+      
+      - name: ⚙️ Install Tools
+        run: ./.github/workflows/scripts/install-tools.sh
 
       - name: 📦 Install Dependencies
         run: dart pub get
