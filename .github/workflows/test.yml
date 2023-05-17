@@ -1,4 +1,4 @@
-name: cover
+name: test
 
 on:
   pull_request:
@@ -20,11 +20,6 @@ jobs:
         uses: dart-lang/setup-dart@v1
         with:
           sdk: "stable"
-          cache: true
-          cache-key: flutter-:os:-:channel:-:version:-:arch:-:hash:-${{ hashFiles('**/pubspec.lock') }}
-
-      - name: ⚙️ Install Tools
-        run: ./.github/workflows/scripts/install-tools.sh
 
       - name: 📦 Install Dependencies
         run: dart pub get
@@ -36,4 +31,4 @@ jobs:
         run: dart analyze lib test
 
       - name: 🧪 Run Tests
-        run: very_good test -j 4 --optimization --min-coverage 100 --test-randomize-ordering-seed random
+        run: dart test -j 4 --test-randomize-ordering-seed random

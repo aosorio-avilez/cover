@@ -1,7 +1,7 @@
 name: cover
 description: The easy way to check your code coverage.
 version: 0.0.1
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/aosorio-avilez/cover
 
 environment:
   sdk: ^3.0.0

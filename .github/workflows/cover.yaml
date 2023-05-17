@@ -1,4 +1,4 @@
-name: coverage
+name: cover
 
 on:
   push:
@@ -17,8 +17,6 @@ jobs:
         uses: dart-lang/setup-dart@v1
         with:
           sdk: "stable"
-          cache: true
-          cache-key: flutter-:os:-:channel:-:version:-:arch:-:hash:-${{ hashFiles('**/pubspec.lock') }}
 
       - name: ⚙️ Install Tools
         run: ./.github/workflows/scripts/install-tools.sh
@@ -27,7 +25,9 @@ jobs:
         run: dart pub get
 
       - name: 🧪 Run Tests with Coverage
-        run: very_good test -j 4 --optimization --coverage --test-randomize-ordering-seed random
+        run: |
+          dart test -j 4 --test-randomize-ordering-seed random --coverage=coverage
+          format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib
       
       - name: 📊 Upload Code Coverage
         uses: codecov/codecov-action@v3
