@@ -20,6 +20,9 @@ jobs:
         uses: dart-lang/setup-dart@v1
         with:
           sdk: "stable"
+      
+      - name: ⚙️ Install Tools
+        run: ./.github/workflows/scripts/install-tools.sh
 
       - name: 📦 Install Dependencies
         run: dart pub get
@@ -30,5 +33,10 @@ jobs:
       - name: 🕵️ Analyze
         run: dart analyze lib test
 
-      - name: 🧪 Run Tests
-        run: dart test -j 4 --test-randomize-ordering-seed random
+      - name: 🧪 Run Tests with Coverage
+        run: |
+          dart test -j 4 --test-randomize-ordering-seed random --coverage=coverage
+          format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib
+
+      - name: 📊 Code Coverage
+        run: cover check
