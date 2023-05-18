@@ -1,5 +1,6 @@
 # cover
 
+[![Cover pub.dev badge](https://img.shields.io/pub/v/cover.svg)](https://pub.dev/packages/cover)
 [![cover](https://github.com/aosorio-avilez/cover/actions/workflows/cover.yaml/badge.svg?branch=main)](https://github.com/aosorio-avilez/cover/actions/workflows/cover.yaml)
 [![codecov](https://codecov.io/gh/aosorio-avilez/cover/branch/main/graph/badge.svg?token=ZWOS98VTND)](https://codecov.io/gh/aosorio-avilez/cover)
 
@@ -24,6 +25,12 @@ $ cover check --path coverage/lcov.info
 
 # Check code coverage with specific minimun coverage
 $ cover check --min-coverage 80
+
+# Check code coverage without display files
+$ cover check --no-display-files
+
+# Show current version
+$ cover --version
 
 # Show usage help
 $ cover --help
