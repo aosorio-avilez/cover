@@ -22,18 +22,18 @@ void main() {
     expect(commandRunner, isA<CompletionCommandRunner<int>>());
   });
 
-  test('''verify cover command runner catch FileMustBeProvided''', () async {
+  test('verify cover command runner catch FileMustBeProvided', () async {
     final exitCode = await commandRunner.run(['check', '--path', '']);
 
     expect(exitCode, ExitCode.osFile.code);
+    verifyConsoleWrites(console);
   });
 
-  test('''verify cover command runner catch UsageException''', () async {
+  test('verify cover command runner catch UsageException', () async {
     final exitCode = await commandRunner.run(['check', '--min-']);
 
     expect(exitCode, ExitCode.usage.code);
-    verify(() => console.writeErrorLine(any())).called(2);
-    verify(() => console.writeLine(any())).called(2);
+    verifyConsoleWrites(console);
   });
 
   test('''verify cover command runner catch FormatException''', () async {
@@ -41,8 +41,7 @@ void main() {
         .run(['check', '--path', 'test/stubs/lcov_empty.info']);
 
     expect(exitCode, ExitCode.usage.code);
-    verify(() => console.writeErrorLine(any())).called(2);
-    verify(() => console.writeLine(any())).called(1);
+    verifyConsoleWrites(console);
   });
 
   test('''verify cover command runner catch PathNotFoundException''', () async {
@@ -50,7 +49,18 @@ void main() {
         .run(['check', '--path', 'coverage/path-not-found.info']);
 
     expect(exitCode, ExitCode.osFile.code);
-    verify(() => console.writeErrorLine(any())).called(2);
-    verify(() => console.writeLine(any())).called(1);
+    verifyConsoleWrites(console);
   });
+
+  test('verify version', () async {
+    final exitCode = await commandRunner.run(['--version']);
+
+    expect(exitCode, ExitCode.success.code);
+    verify(() => console.writeLine(any()));
+  });
+}
+
+void verifyConsoleWrites(Console console) {
+  verify(() => console.writeErrorLine(any())).called(1);
+  verify(() => console.writeLine(any())).called(2);
 }

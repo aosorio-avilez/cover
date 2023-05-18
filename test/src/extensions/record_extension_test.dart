@@ -27,10 +27,10 @@ void main() {
       final row = record.toRow();
 
       expect(row, isA<List<Object>>());
-      expect(row[0], '$failColor${record.file}');
-      expect(row[1], '$failColor${record.lines?.found}');
-      expect(row[2], '$failColor${record.lines?.hit}');
-      expect(row[3], '$failColor${record.coveragePercentage}%');
+      expect(row[0], '$redColor${record.file}');
+      expect(row[1], '$redColor${record.lines?.found}');
+      expect(row[2], '$redColor${record.lines?.hit}');
+      expect(row[3], '$redColor${record.coveragePercentage}%');
     });
 
     test('to succes record', () async {
@@ -42,10 +42,10 @@ void main() {
       final row = record.toRow();
 
       expect(row, isA<List<Object>>());
-      expect(row[0], '$passColor${record.file}');
-      expect(row[1], '$passColor${record.lines?.found}');
-      expect(row[2], '$passColor${record.lines?.hit}');
-      expect(row[3], '$passColor${record.coveragePercentage}%');
+      expect(row[0], '$greenColor${record.file}');
+      expect(row[1], '$greenColor${record.lines?.found}');
+      expect(row[2], '$greenColor${record.lines?.hit}');
+      expect(row[3], '$greenColor${record.coveragePercentage}%');
     });
 
     test('to under under threshold record', () async {
@@ -57,10 +57,10 @@ void main() {
       final row = record.toRow();
 
       expect(row, isA<List<Object>>());
-      expect(row[0], '$underThresholdColor${record.file}');
-      expect(row[1], '$underThresholdColor${record.lines?.found}');
-      expect(row[2], '$underThresholdColor${record.lines?.hit}');
-      expect(row[3], '$underThresholdColor${record.coveragePercentage}%');
+      expect(row[0], '$yellowColor${record.file}');
+      expect(row[1], '$yellowColor${record.lines?.found}');
+      expect(row[2], '$yellowColor${record.lines?.hit}');
+      expect(row[3], '$yellowColor${record.coveragePercentage}%');
     });
   });
 
