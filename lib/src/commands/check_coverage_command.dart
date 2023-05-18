@@ -50,7 +50,7 @@ class CheckCoverageCommand extends Command<int> {
 
     console
       ..write(table)
-      ..writeLine('Minimun coverage: $passColor$minCoverage%')
+      ..writeLine('Minimun coverage: $greenColor$minCoverage%')
       ..resetColorAttributes()
       ..writeLine('Current coverage: $color$currentCoverage%');
 
