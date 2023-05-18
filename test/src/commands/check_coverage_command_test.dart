@@ -69,4 +69,19 @@ void main() {
     verifyNever(() => console.write(any()));
     verifyNever(() => console.resetColorAttributes());
   });
+
+  test('''verify check command no display table with --no-display-files flag''',
+      () async {
+    final exitCode = await runner.run([
+      'check',
+      '--path',
+      'test/stubs/lcov_complete.info',
+      '--no-display-files'
+    ]);
+
+    expect(exitCode, ExitCode.success.code);
+    verifyNever(() => console.write(any()));
+    verify(() => console.writeLine(any())).called(2);
+    verify(() => console.resetColorAttributes()).called(1);
+  });
 }

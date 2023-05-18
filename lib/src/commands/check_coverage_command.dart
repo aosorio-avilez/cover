@@ -15,6 +15,10 @@ const minCoverageArgumentName = 'min-coverage';
 const defaultMinCoverage = 100.00;
 const minCoverageHelp = 'Enforce a minimum coverage percentage.';
 
+const displayFilesArgumentName = 'display-files';
+const defaultDisplayFiles = true;
+const displayFilesHelp = 'Print corevage files';
+
 const commandDescription = 'Check code coverage';
 const commandName = 'check';
 
@@ -31,7 +35,9 @@ class CheckCoverageCommand extends Command<int> {
 
   @override
   FutureOr<int>? run() async {
-    final (filePath, minCoverage) = getCommandArguments();
+    final filePath = getPathArgument();
+    final minCoverage = getMinCoverageArgument();
+    final displayFiles = getDisplayFilesArgument();
     final records = await parseCoverageFile(filePath);
     final table = buildCoverageFileTable();
 
@@ -41,15 +47,18 @@ class CheckCoverageCommand extends Command<int> {
       );
     }
 
-    for (final record in records) {
-      table.insertRow(record.toRow());
-    }
-
     final currentCoverage = records.getCodeCoverageResult();
     final color = currentCoverage.getCoverageColorAnsi();
 
+    if (displayFiles) {
+      for (final record in records) {
+        table.insertRow(record.toRow());
+      }
+
+      console.write(table);
+    }
+
     console
-      ..write(table)
       ..writeLine('Minimun coverage: $greenColor$minCoverage%')
       ..resetColorAttributes()
       ..writeLine('Current coverage: $color$currentCoverage%');
@@ -72,10 +81,6 @@ class CheckCoverageCommand extends Command<int> {
     return Parser.parse(filePath);
   }
 
-  (String, double) getCommandArguments() {
-    return (getPathArgument(), getMinCoverageArgument());
-  }
-
   double getMinCoverageArgument() {
     final minCoverage =
         globalResults?[minCoverageArgumentName] as String? ?? '';
@@ -84,5 +89,10 @@ class CheckCoverageCommand extends Command<int> {
 
   String getPathArgument() {
     return globalResults?[filePathArgumentName] as String? ?? defaultFilePath;
+  }
+
+  bool getDisplayFilesArgument() {
+    return globalResults?[displayFilesArgumentName] as bool? ??
+        defaultDisplayFiles;
   }
 }

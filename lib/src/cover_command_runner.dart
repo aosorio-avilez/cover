@@ -19,21 +19,29 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
       : _console = console ?? Console(),
         super(executableName, description) {
     argParser
-      ..addOption(
-        filePathArgumentName,
-        defaultsTo: defaultFilePath,
-        help: filePathHelp,
-      )
-      ..addOption(
-        minCoverageArgumentName,
-        defaultsTo: '$defaultMinCoverage',
-        help: minCoverageHelp,
-      )
       ..addFlag(
         versionFlag,
         abbr: 'v',
         negatable: false,
         help: versionDescription,
+      )
+      ..addFlag(
+        displayFilesArgumentName,
+        abbr: 'd',
+        help: displayFilesHelp,
+        defaultsTo: defaultDisplayFiles,
+      )
+      ..addOption(
+        filePathArgumentName,
+        defaultsTo: defaultFilePath,
+        help: filePathHelp,
+        abbr: 'p',
+      )
+      ..addOption(
+        minCoverageArgumentName,
+        defaultsTo: '$defaultMinCoverage',
+        help: minCoverageHelp,
+        abbr: 'm',
       );
 
     addCommand(CheckCoverageCommand(_console));
