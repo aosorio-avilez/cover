@@ -26,10 +26,14 @@ extension RecordExtension on Record {
 
 extension RecordListExtension on List<Record> {
   double getCodeCoverageResult() {
-    final coveragePercentageSum =
-        map((record) => record.coveragePercentage).reduce((r1, r2) => r1 + r2);
-    final coveragePercentageFixed =
-        (coveragePercentageSum / length).toStringAsFixed(2);
+    final linesFoundSum =
+        map((record) => record.lines?.found ?? 0).reduce((r1, r2) => r1 + r2);
+    final linesHitSum =
+        map((record) => record.lines?.hit ?? 0).reduce((r1, r2) => r1 + r2);
+    final coveragePercentage = linesHitSum * 100 / linesFoundSum;
+    final coveragePercentageFixed = coveragePercentage.isNaN
+        ? '0.00'
+        : coveragePercentage.toStringAsFixed(2);
     return double.parse(coveragePercentageFixed);
   }
 }
