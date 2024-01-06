@@ -76,7 +76,7 @@ void main() {
       'check',
       '--path',
       'test/stubs/lcov_complete.info',
-      '--no-display-files'
+      '--no-display-files',
     ]);
 
     expect(exitCode, ExitCode.success.code);
