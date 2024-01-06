@@ -1,6 +1,6 @@
 name: cover
 description: The easy way to check your code coverage.
-version: 0.0.2
+version: 0.0.3
 repository: https://github.com/aosorio-avilez/cover
 
 environment:
