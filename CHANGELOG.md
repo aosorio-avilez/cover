@@ -10,3 +10,7 @@
 ## 0.0.3
 
 - Fixed an issue with the final coverage percentage calculation
+
+## 0.0.4
+
+- Flag `--excluded-paths` was added in order to exclude folders/files from coverage 
