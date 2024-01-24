@@ -19,6 +19,11 @@ const displayFilesArgumentName = 'display-files';
 const defaultDisplayFiles = true;
 const displayFilesHelp = 'Print corevage files';
 
+const excludePathsArgumentName = 'excluded-paths';
+const defaultExcludePaths = '';
+const excludePathsHelp =
+    'Specify paths separate by comma to exclude from coverage';
+
 const commandDescription = 'Check code coverage';
 const commandName = 'check';
 
@@ -38,7 +43,8 @@ class CheckCoverageCommand extends Command<int> {
     final filePath = getPathArgument();
     final minCoverage = getMinCoverageArgument();
     final displayFiles = getDisplayFilesArgument();
-    final records = await parseCoverageFile(filePath);
+    final excludePaths = getExcludePathsArgument();
+    final records = await parseCoverageFile(filePath, excludePaths);
     final table = buildCoverageFileTable();
 
     if (records.isEmpty) {
@@ -77,8 +83,22 @@ class CheckCoverageCommand extends Command<int> {
       ..borderColor = ConsoleColor.black;
   }
 
-  Future<List<Record>> parseCoverageFile(String filePath) {
-    return Parser.parse(filePath);
+  Future<List<Record>> parseCoverageFile(
+    String filePath,
+    List<String> excludedPaths,
+  ) async {
+    final files = await Parser.parse(filePath);
+
+    if (excludedPaths.isEmpty) {
+      return files;
+    }
+
+    for (final excludedPath in excludedPaths) {
+      final excludePattern = RegExp(excludedPath);
+      files.removeWhere((record) => excludePattern.hasMatch(record.file ?? ''));
+    }
+
+    return files.toList();
   }
 
   double getMinCoverageArgument() {
@@ -94,5 +114,20 @@ class CheckCoverageCommand extends Command<int> {
   bool getDisplayFilesArgument() {
     return globalResults?[displayFilesArgumentName] as bool? ??
         defaultDisplayFiles;
+  }
+
+  List<String> getExcludePathsArgument() {
+    final excludePathsString =
+        globalResults?[excludePathsArgumentName] as String? ??
+            defaultExcludePaths;
+
+    if (excludePathsString.isEmpty) {
+      return [];
+    }
+
+    return excludePathsString
+        .split(',')
+        .map((e) => e.replaceAll(' ', ''))
+        .toList();
   }
 }

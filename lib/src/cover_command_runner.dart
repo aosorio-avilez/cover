@@ -42,6 +42,12 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
         defaultsTo: '$defaultMinCoverage',
         help: minCoverageHelp,
         abbr: 'm',
+      )
+      ..addOption(
+        excludePathsArgumentName,
+        defaultsTo: defaultExcludePaths,
+        help: excludePathsHelp,
+        abbr: 'e',
       );
 
     addCommand(CheckCoverageCommand(_console));
