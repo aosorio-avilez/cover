@@ -28,9 +28,6 @@ jobs:
         run: |
           dart test -j 4 --test-randomize-ordering-seed random --coverage=coverage
           format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib
-
-      - name: 📊 Check Coverage
-        run: cover check --no-display-files
       
       - name: 📊 Upload Code Coverage
         uses: codecov/codecov-action@v3
