@@ -84,4 +84,20 @@ void main() {
     verify(() => console.writeLine(any())).called(2);
     verify(() => console.resetColorAttributes()).called(1);
   });
+
+  test('verify check coverage command exclude paths with --excluded-files flag',
+      () async {
+    final exitCode = await runner.run([
+      'check',
+      '--path',
+      'test/stubs/lcov_uncovered.info',
+      '--excluded-paths',
+      '/datasources',
+    ]);
+
+    expect(exitCode, ExitCode.success.code);
+    verify(() => console.write(any())).called(1);
+    verify(() => console.writeLine(any())).called(2);
+    verify(() => console.resetColorAttributes()).called(1);
+  });
 }
