@@ -29,6 +29,9 @@ $ cover check --min-coverage 80
 # Check code coverage without display files
 $ cover check --no-display-files
 
+# Check code coverage excluding some paths
+$ cover check --excluded-paths "/folder1, /folder2, file.txt"
+
 # Show current version
 $ cover --version
 
