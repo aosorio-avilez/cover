@@ -4,8 +4,8 @@ import 'package:args/command_runner.dart';
 import 'package:cover/src/extensions/double_extension.dart';
 import 'package:cover/src/extensions/record_extension.dart';
 import 'package:cover/src/models/exit_code.dart';
+import 'package:cover/src/services/coverage_service.dart';
 import 'package:dart_console/dart_console.dart';
-import 'package:lcov_parser/lcov_parser.dart';
 
 const filePathArgumentName = 'path';
 const defaultFilePath = 'coverage/lcov.info';
@@ -28,9 +28,11 @@ const commandDescription = 'Check code coverage';
 const commandName = 'check';
 
 class CheckCoverageCommand extends Command<int> {
-  CheckCoverageCommand(this.console);
+  CheckCoverageCommand(this.console, {CoverageService? service})
+      : _service = service ?? CoverageService();
 
   final Console console;
+  final CoverageService _service;
 
   @override
   String get description => commandDescription;
@@ -44,34 +46,39 @@ class CheckCoverageCommand extends Command<int> {
     final minCoverage = getMinCoverageArgument();
     final displayFiles = getDisplayFilesArgument();
     final excludePaths = getExcludePathsArgument();
-    final records = await parseCoverageFile(filePath, excludePaths);
-    final table = buildCoverageFileTable();
 
-    if (records.isEmpty) {
-      throw const FormatException(
-        'File is empty or does not have the correct format',
+    try {
+      final result = await _service.checkCoverage(
+        filePath: filePath,
+        minCoverage: minCoverage,
+        excludePaths: excludePaths,
       );
-    }
 
-    final currentCoverage = records.getCodeCoverageResult();
-    final color = currentCoverage.getCoverageColorAnsi();
+      final table = buildCoverageFileTable();
+      final currentCoverage = result.coverage;
+      final color = currentCoverage.getCoverageColorAnsi();
 
-    if (displayFiles) {
-      for (final record in records) {
-        table.insertRow(record.toRow());
+      if (displayFiles) {
+        for (final record in result.files) {
+          table.insertRow(record.toRow());
+        }
+
+        console.write(table);
       }
 
-      console.write(table);
+      console
+        ..writeLine('Minimun coverage: $greenColor$minCoverage%')
+        ..resetColorAttributes()
+        ..writeLine('Current coverage: $color$currentCoverage%');
+
+      return currentCoverage >= minCoverage
+          ? ExitCode.success.code
+          : ExitCode.fail.code;
+    } on FormatException catch (e) {
+      throw FormatException(e.message);
+    } catch (e) {
+      rethrow;
     }
-
-    console
-      ..writeLine('Minimun coverage: $greenColor$minCoverage%')
-      ..resetColorAttributes()
-      ..writeLine('Current coverage: $color$currentCoverage%');
-
-    return currentCoverage >= minCoverage
-        ? ExitCode.success.code
-        : ExitCode.fail.code;
   }
 
   Table buildCoverageFileTable() {
@@ -81,24 +88,6 @@ class CheckCoverageCommand extends Command<int> {
       ..insertColumn(header: 'Hit Lines', alignment: TextAlignment.center)
       ..insertColumn(header: 'Coverage', alignment: TextAlignment.center)
       ..borderColor = ConsoleColor.black;
-  }
-
-  Future<List<Record>> parseCoverageFile(
-    String filePath,
-    List<String> excludedPaths,
-  ) async {
-    final files = await Parser.parse(filePath);
-
-    if (excludedPaths.isEmpty) {
-      return files;
-    }
-
-    for (final excludedPath in excludedPaths) {
-      final excludePattern = RegExp(excludedPath);
-      files.removeWhere((record) => excludePattern.hasMatch(record.file ?? ''));
-    }
-
-    return files.toList();
   }
 
   double getMinCoverageArgument() {

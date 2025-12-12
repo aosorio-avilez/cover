@@ -14,3 +14,11 @@
 ## 0.0.4
 
 - Flag `--excluded-paths` was added in order to exclude folders/files from coverage 
+
+## 0.1.0
+
+- Refactored architecture to introduce `CoverageService` for better testability and programatic usage.
+- Added `CheckCoverageCommand` support for programatic usage.
+- Upgraded dependencies to support latest Dart versions.
+- Added full example package in `example/`.
+- Updated development dependencies.

@@ -5,6 +5,7 @@
 [![codecov](https://codecov.io/gh/aosorio-avilez/cover/branch/main/graph/badge.svg?token=ZWOS98VTND)](https://codecov.io/gh/aosorio-avilez/cover)
 
 Package that provide an easy way to check your code coverage.
+It supports both CLI usage and programmatic usage via `CoverageService`.
 
 ## Getting Started
 
