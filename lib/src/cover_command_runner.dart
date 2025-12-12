@@ -96,6 +96,6 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
   Future<String> getVersion() async {
     final fileContent = await File('pubspec.yaml').readAsString();
     final pubspec = Pubspec.parse(fileContent);
-    return pubspec.version!.canonicalizedVersion;
+    return pubspec.version!.toString();
   }
 }

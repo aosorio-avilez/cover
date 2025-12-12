@@ -1,0 +1,12 @@
+name: cover_example
+description: An example of how to use the cover package.
+publish_to: 'none'
+version: 1.0.0
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  cover:
+    path: ../
+  lcov_parser: ^0.1.2
