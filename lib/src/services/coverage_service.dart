@@ -36,7 +36,7 @@ class CoverageService {
 
     final filteredFiles = files.toList();
     for (final excludedPath in excludedPaths) {
-      final excludePattern = RegExp(excludedPath);
+      final excludePattern = RegExp(RegExp.escape(excludedPath));
       filteredFiles.removeWhere(
         (record) => excludePattern.hasMatch(record.file ?? ''),
       );
