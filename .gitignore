@@ -1,8 +1,18 @@
-# https://dart.dev/guides/libraries/private-files
-# Created by `dart pub`
-.dart_tool/
-pubspec.lock
-.vscode/
-build/
-coverage/
+# Misc
+.DS_Store
+.env
 .fvm/
+.vscode/
+
+# Dart
+.dart_tool/
+build/
+.packages
+.pub/
+pubspec.lock
+
+# Coverage
+coverage/
+
+# Dart SDK
+dart-sdk/
