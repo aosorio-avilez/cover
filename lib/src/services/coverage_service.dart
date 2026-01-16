@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:cover/src/extensions/record_extension.dart';
 import 'package:cover/src/models/coverage_result.dart';
 import 'package:lcov_parser/lcov_parser.dart';
+import 'package:path/path.dart' as path;
 
 class CoverageService {
   Future<CoverageResult> checkCoverage({
@@ -8,6 +11,12 @@ class CoverageService {
     required double minCoverage,
     List<String> excludePaths = const [],
   }) async {
+    if (!_isPathAllowed(filePath)) {
+      throw const FormatException(
+        'File path must be within the current working directory.',
+      );
+    }
+
     final files = await _parseCoverageFile(filePath, excludePaths);
 
     if (files.isEmpty) {
@@ -43,5 +52,12 @@ class CoverageService {
     }
 
     return filteredFiles;
+  }
+
+  bool _isPathAllowed(String filePath) {
+    final canonicalPath = path.canonicalize(filePath);
+    final currentPath = path.canonicalize(Directory.current.path);
+    return path.isWithin(currentPath, canonicalPath) ||
+        canonicalPath == currentPath;
   }
 }
