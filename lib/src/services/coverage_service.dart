@@ -56,8 +56,17 @@ class CoverageService {
   }
 
   bool _isPathAllowed(String filePath) {
-    final canonicalPath = path.canonicalize(filePath);
-    final currentPath = path.canonicalize(Directory.current.path);
+    String resolvedPath;
+    try {
+      resolvedPath = File(filePath).resolveSymbolicLinksSync();
+    } catch (_) {
+      resolvedPath = filePath;
+    }
+
+    final canonicalPath = path.canonicalize(resolvedPath);
+    final currentPath =
+        path.canonicalize(Directory.current.resolveSymbolicLinksSync());
+
     return path.isWithin(currentPath, canonicalPath) ||
         canonicalPath == currentPath;
   }
