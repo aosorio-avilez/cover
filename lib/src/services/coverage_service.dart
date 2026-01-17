@@ -43,15 +43,12 @@ class CoverageService {
       return files;
     }
 
-    final filteredFiles = files.toList();
-    for (final excludedPath in excludedPaths) {
-      final excludePattern = RegExp(RegExp.escape(excludedPath));
-      filteredFiles.removeWhere(
-        (record) => excludePattern.hasMatch(record.file ?? ''),
-      );
-    }
-
-    return filteredFiles;
+    // Optimization: Use `String.contains` instead of `RegExp` to avoid compilation overhead
+    // and iterate the list only once for better performance.
+    return files.where((record) {
+      final file = record.file ?? '';
+      return !excludedPaths.any(file.contains);
+    }).toList();
   }
 
   bool _isPathAllowed(String filePath) {
