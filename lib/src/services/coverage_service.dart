@@ -52,9 +52,20 @@ class CoverageService {
   }
 
   bool _isPathAllowed(String filePath) {
-    final canonicalPath = path.canonicalize(filePath);
-    final currentPath = path.canonicalize(Directory.current.path);
-    return path.isWithin(currentPath, canonicalPath) ||
-        canonicalPath == currentPath;
+    try {
+      final canonicalPath = File(filePath).resolveSymbolicLinksSync();
+      final currentPath =
+          File(Directory.current.path).resolveSymbolicLinksSync();
+      return path.isWithin(currentPath, canonicalPath) ||
+          canonicalPath == currentPath;
+    } catch (e) {
+      // If resolving the symbolic link fails (e.g. file doesn't exist),
+      // we fallback to simple canonicalization but this might be safer to just return false
+      // or rethrow. However, for consistency with previous behavior for non-existent files:
+      final canonicalPath = path.canonicalize(filePath);
+      final currentPath = path.canonicalize(Directory.current.path);
+      return path.isWithin(currentPath, canonicalPath) ||
+          canonicalPath == currentPath;
+    }
   }
 }
