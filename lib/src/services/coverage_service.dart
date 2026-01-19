@@ -46,7 +46,8 @@ class CoverageService {
     // Optimization: Use `String.contains` instead of `RegExp` to avoid
     // compilation overhead. Use `retainWhere` to modify the list in-place,
     // avoiding extra list allocation and copying.
-    // Note: `files` is a fresh list from `Parser.parse`, so we can mutate it safely.
+    // Note: `files` is a fresh list from `Parser.parse`, so we can mutate it
+    // safely.
     files.retainWhere((record) {
       final file = record.file ?? '';
       return !excludedPaths.any(file.contains);
