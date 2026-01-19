@@ -1,7 +1,13 @@
 import 'dart:io';
 
 void main() {
-  final output = File('example/params/benchmark_lcov.info');
+  final output = File('params/benchmark_lcov.info');
+
+  // Ensure parent directory exists
+  if (!output.parent.existsSync()) {
+    output.parent.createSync(recursive: true);
+  }
+
   final sink = output.openWrite();
 
   const numFiles = 10000;

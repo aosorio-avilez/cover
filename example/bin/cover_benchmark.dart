@@ -9,7 +9,7 @@ void main() async {
   final runner = CoverCommandRunner();
 
   // Path to the large benchmark file
-  const benchmarkPath = 'example/params/benchmark_lcov.info';
+  const benchmarkPath = 'params/benchmark_lcov.info';
 
   if (!File(benchmarkPath).existsSync()) {
     // ignore: avoid_print
@@ -25,6 +25,7 @@ Benchmark file not found. Please run generate_lcov_benchmark.dart first.''',
     'check',
     '--path',
     benchmarkPath,
+    '--no-display-files',
   ];
 
   // ignore: avoid_print
