@@ -50,13 +50,13 @@ void main() {
     });
 
     test(
-        'Path Traversal: should throw when accessing symlink pointing outside working directory',
-        () async {
+        'Path Traversal: should throw when accessing symlink pointing outside '
+        'working directory', () async {
       final tempDir = Directory.systemTemp.createTempSync('cover_test_symlink');
-      final targetFile = File('${tempDir.path}/lcov.info');
-      targetFile.writeAsStringSync('TN:\nSF:file.dart\nDA:1,1\nend_of_record\n');
+      final targetFile = File('${tempDir.path}/lcov.info')
+        ..writeAsStringSync('TN:\nSF:file.dart\nDA:1,1\nend_of_record\n');
 
-      final linkPath = 'link_to_outside.info';
+      const linkPath = 'link_to_outside.info';
       final link = Link(linkPath);
       if (link.existsSync()) link.deleteSync();
       link.createSync(targetFile.path);
@@ -66,11 +66,15 @@ void main() {
       try {
         await expectLater(
           service.checkCoverage(filePath: linkPath, minCoverage: 0),
-          throwsA(isA<FormatException>().having(
-            (e) => e.message,
-            'message',
-            contains('File path must be within the current working directory'),
-          )),
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              contains(
+                'File path must be within the current working directory',
+              ),
+            ),
+          ),
         );
       } finally {
         if (link.existsSync()) link.deleteSync();
