@@ -14,8 +14,11 @@ extension RecordExtension on Record {
   List<Object> toRow() {
     final percentage = coveragePercentage;
     final color = percentage.getCoverageColorAnsi();
+    final sanitizedFile = (file ?? 'null')
+        .replaceAll(RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]'), '')
+        .replaceAll(RegExp(r'[\x00-\x1F\x7F]'), '');
     return <Object>[
-      '$color$file',
+      '$color$sanitizedFile',
       '$color${lines?.found}',
       '$color${lines?.hit}',
       '$color$percentage%',
