@@ -33,7 +33,9 @@ void main() {
     await tempDir.delete(recursive: true);
   });
 
-  test('Output Sanitization: verify filename with ANSI codes is displayed (reproduction)', () async {
+  test(
+      'Output Sanitization: verify filename with ANSI codes is displayed (reproduction)',
+      () async {
     // \x1b[31m is Red color in ANSI.
     const maliciousFilename = 'malicious\x1b[31m.dart';
     const escapedFilename = 'malicious.dart'; // We expect this after fix
@@ -54,7 +56,8 @@ end_of_record
 ''');
 
     // Run the command
-    final exitCode = await runner.run(['check', '--path', lcovFile.path, '--display-files']);
+    final exitCode =
+        await runner.run(['check', '--path', lcovFile.path, '--display-files']);
 
     expect(exitCode, ExitCode.success.code);
 
