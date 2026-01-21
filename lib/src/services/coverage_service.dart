@@ -6,6 +6,11 @@ import 'package:lcov_parser/lcov_parser.dart';
 import 'package:path/path.dart' as path;
 
 class CoverageService {
+  CoverageService({Directory? currentDirectory})
+      : _currentDirectory = currentDirectory ?? Directory.current;
+
+  final Directory _currentDirectory;
+
   Future<CoverageResult> checkCoverage({
     required String filePath,
     required double minCoverage,
@@ -37,7 +42,18 @@ class CoverageService {
     String filePath,
     List<String> excludedPaths,
   ) async {
-    final files = await Parser.parse(filePath);
+    if (filePath.isEmpty) {
+      throw const PathNotFoundException(
+        '',
+        OSError('File path cannot be empty', 2),
+      );
+    }
+
+    final absolutePath = path.isAbsolute(filePath)
+        ? filePath
+        : path.join(_currentDirectory.path, filePath);
+
+    final files = await Parser.parse(absolutePath);
 
     if (excludedPaths.isEmpty) {
       return files;
@@ -56,16 +72,26 @@ class CoverageService {
   }
 
   bool _isPathAllowed(String filePath) {
+    final absolutePath = path.isAbsolute(filePath)
+        ? filePath
+        : path.join(_currentDirectory.path, filePath);
+
     String resolvedPath;
     try {
-      resolvedPath = File(filePath).resolveSymbolicLinksSync();
+      resolvedPath = File(absolutePath).resolveSymbolicLinksSync();
     } catch (_) {
-      resolvedPath = filePath;
+      resolvedPath = absolutePath;
     }
 
     final canonicalPath = path.canonicalize(resolvedPath);
-    final currentPath =
-        path.canonicalize(Directory.current.resolveSymbolicLinksSync());
+
+    String currentResolvedPath;
+    try {
+      currentResolvedPath = _currentDirectory.resolveSymbolicLinksSync();
+    } catch (_) {
+      currentResolvedPath = _currentDirectory.path;
+    }
+    final currentPath = path.canonicalize(currentResolvedPath);
 
     return path.isWithin(currentPath, canonicalPath) ||
         canonicalPath == currentPath;
