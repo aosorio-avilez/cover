@@ -5,6 +5,7 @@ import 'package:args/command_runner.dart';
 import 'package:cli_completion/cli_completion.dart';
 import 'package:cover/src/commands/check_coverage_command.dart';
 import 'package:cover/src/models/exit_code.dart';
+import 'package:cover/src/services/coverage_service.dart';
 import 'package:dart_console/dart_console.dart';
 import 'package:lcov_parser/lcov_parser.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
@@ -15,9 +16,10 @@ const versionFlag = 'version';
 const versionDescription = 'Print the current version.';
 
 class CoverCommandRunner extends CompletionCommandRunner<int> {
-  CoverCommandRunner({Console? console})
+  CoverCommandRunner({Console? console, CoverageService? service})
       : _console = console ?? Console(),
         super(executableName, description) {
+    final coverageService = service ?? CoverageService();
     argParser
       ..addFlag(
         versionFlag,
@@ -50,7 +52,7 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
         abbr: 'e',
       );
 
-    addCommand(CheckCoverageCommand(_console));
+    addCommand(CheckCoverageCommand(_console, service: coverageService));
   }
 
   final Console _console;
