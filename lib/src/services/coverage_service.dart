@@ -16,13 +16,16 @@ class CoverageService {
     required double minCoverage,
     List<String> excludePaths = const [],
   }) async {
-    if (!_isPathAllowed(filePath)) {
-      throw const FormatException(
-        'File path must be within the current working directory.',
+    if (filePath.isEmpty) {
+      throw const PathNotFoundException(
+        '',
+        OSError('File path cannot be empty', 2),
       );
     }
 
-    final files = await _parseCoverageFile(filePath, excludePaths);
+    final safePath = _validateAndResolvePath(filePath);
+
+    final files = await _parseCoverageFile(safePath, excludePaths);
 
     if (files.isEmpty) {
       throw const FormatException(
@@ -42,18 +45,7 @@ class CoverageService {
     String filePath,
     List<String> excludedPaths,
   ) async {
-    if (filePath.isEmpty) {
-      throw const PathNotFoundException(
-        '',
-        OSError('File path cannot be empty', 2),
-      );
-    }
-
-    final absolutePath = path.isAbsolute(filePath)
-        ? filePath
-        : path.join(_currentDirectory.path, filePath);
-
-    final files = await Parser.parse(absolutePath);
+    final files = await Parser.parse(filePath);
 
     if (excludedPaths.isEmpty) {
       return files;
@@ -71,7 +63,7 @@ class CoverageService {
     return files;
   }
 
-  bool _isPathAllowed(String filePath) {
+  String _validateAndResolvePath(String filePath) {
     final absolutePath = path.isAbsolute(filePath)
         ? filePath
         : path.join(_currentDirectory.path, filePath);
@@ -93,7 +85,13 @@ class CoverageService {
     }
     final currentPath = path.canonicalize(currentResolvedPath);
 
-    return path.isWithin(currentPath, canonicalPath) ||
-        canonicalPath == currentPath;
+    if (path.isWithin(currentPath, canonicalPath) ||
+        canonicalPath == currentPath) {
+      return canonicalPath;
+    }
+
+    throw const FormatException(
+      'File path must be within the current working directory.',
+    );
   }
 }
