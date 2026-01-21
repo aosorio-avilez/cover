@@ -2,10 +2,12 @@ import 'package:cli_completion/cli_completion.dart';
 import 'package:cover/src/cover_command_runner.dart';
 import 'package:cover/src/models/exit_code.dart';
 import 'package:dart_console/dart_console.dart';
+import 'package:lcov_parser/lcov_parser.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
 import '../mocks/console_mock.dart';
+import '../mocks/coverage_service_mock.dart';
 
 void main() {
   late Console console;
@@ -47,6 +49,25 @@ void main() {
   test('''verify cover command runner catch PathNotFoundException''', () async {
     final exitCode = await commandRunner
         .run(['check', '--path', 'coverage/path-not-found.info']);
+
+    expect(exitCode, ExitCode.osFile.code);
+    verifyConsoleWrites(console);
+  });
+
+  test('verify cover command runner catch FileMustBeProvided', () async {
+    final service = CoverageServiceMock();
+    final commandRunner =
+        CoverCommandRunner(console: console, service: service);
+
+    when(
+      () => service.checkCoverage(
+        filePath: any(named: 'filePath'),
+        minCoverage: any(named: 'minCoverage'),
+      ),
+    ).thenThrow(FileMustBeProvided());
+
+    final exitCode =
+        await commandRunner.run(['check', '--path', 'coverage/lcov.info']);
 
     expect(exitCode, ExitCode.osFile.code);
     verifyConsoleWrites(console);
