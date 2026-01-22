@@ -101,5 +101,34 @@ void main() {
         if (testDir.existsSync()) await testDir.delete(recursive: true);
       }
     });
+
+    test(
+        'Path Traversal: should allow accessing symlink pointing WITHIN working '
+        'directory', () async {
+      final tempDir =
+          await Directory.systemTemp.createTemp('cover_security_symlink_inner');
+      final realFile = File('${tempDir.path}/real.info');
+      await realFile.writeAsString(
+        'TN:\nSF:/path/to/file\nDA:1,1\nLF:1\nLH:1\nend_of_record',
+      );
+
+      final linkPath = path.join(tempDir.path, 'link.info');
+      // Create a relative link
+      await Link(linkPath).create('real.info');
+
+      final service = CoverageService(currentDirectory: tempDir);
+
+      try {
+        final result = await service.checkCoverage(
+          filePath: 'link.info',
+          minCoverage: 0,
+        );
+        expect(result.coverage, 100.0);
+      } finally {
+        if (tempDir.existsSync()) {
+          await tempDir.delete(recursive: true);
+        }
+      }
+    });
   });
 }
