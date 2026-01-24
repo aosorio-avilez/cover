@@ -1,8 +1,8 @@
 import 'package:cover/src/extensions/double_extension.dart';
 import 'package:lcov_parser/lcov_parser.dart';
 
-final _ansiEscapeRegExp = RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]');
-final _controlCharRegExp = RegExp(r'[\x00-\x1F\x7F]');
+final _ansiAndControlRegExp =
+    RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]|[\x00-\x1F\x7F]');
 
 extension RecordExtension on Record {
   double get coveragePercentage {
@@ -17,9 +17,8 @@ extension RecordExtension on Record {
   List<Object> toRow() {
     final percentage = coveragePercentage;
     final color = percentage.getCoverageColorAnsi();
-    final sanitizedFile = (file ?? 'null')
-        .replaceAll(_ansiEscapeRegExp, '')
-        .replaceAll(_controlCharRegExp, '');
+    final sanitizedFile =
+        (file ?? 'null').replaceAll(_ansiAndControlRegExp, '');
     return <Object>[
       '$color$sanitizedFile',
       '$color${lines?.found}',
