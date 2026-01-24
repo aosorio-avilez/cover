@@ -114,9 +114,6 @@ class CheckCoverageCommand extends Command<int> {
       return [];
     }
 
-    return excludePathsString
-        .split(',')
-        .map((e) => e.replaceAll(' ', ''))
-        .toList();
+    return excludePathsString.split(',').map((e) => e.trim()).toList();
   }
 }
