@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
@@ -96,7 +97,15 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
   }
 
   Future<String> getVersion() async {
-    final fileContent = await File('pubspec.yaml').readAsString();
+    final packageUri = Uri.parse('package:cover/');
+    final resolvedUri = await Isolate.resolvePackageUri(packageUri);
+
+    if (resolvedUri == null) {
+      throw StateError('Could not resolve package URI for package:cover');
+    }
+
+    final pubspecUri = resolvedUri.resolve('../pubspec.yaml');
+    final fileContent = await File.fromUri(pubspecUri).readAsString();
     final pubspec = Pubspec.parse(fileContent);
     return pubspec.version!.toString();
   }
