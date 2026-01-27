@@ -72,6 +72,9 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
     } on PathNotFoundException catch (e) {
       printError(e.osError?.message ?? e.message);
       return ExitCode.osFile.code;
+    } on FileSystemException catch (e) {
+      printError(e.osError?.message ?? e.message);
+      return ExitCode.osFile.code;
     } on FileMustBeProvided catch (e) {
       printError(e.errMsg());
       return ExitCode.osFile.code;
