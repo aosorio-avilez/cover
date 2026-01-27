@@ -59,6 +59,18 @@ void main() {
       expect(result.files.length, 8);
     });
 
+    test('checkCoverage ignores empty strings in excludedPaths', () async {
+      final result = await service.checkCoverage(
+        filePath: 'test/stubs/lcov_complete.info',
+        minCoverage: 100,
+        excludePaths: [''],
+      );
+
+      // Should not exclude any files because '' is ignored.
+      expect(result.coverage, 100.0);
+      expect(result.files.length, 17);
+    });
+
     test('_isPathAllowed handles CWD resolution failure', () async {
       final mockDir = MockDirectory();
       when(mockDir.resolveSymbolicLinksSync)

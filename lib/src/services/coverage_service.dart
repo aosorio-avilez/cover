@@ -48,7 +48,12 @@ class CoverageService {
     // Note: filePath is now expected to be a validated, absolute path.
     final files = await Parser.parse(filePath);
 
-    if (excludedPaths.isEmpty) {
+    // Optimization: Filter out empty strings to avoid matching all files and
+    // ensure correctness.
+    final validExcludedPaths =
+        excludedPaths.where((e) => e.isNotEmpty).toList();
+
+    if (validExcludedPaths.isEmpty) {
       return files;
     }
 
@@ -59,7 +64,14 @@ class CoverageService {
     // safely.
     files.retainWhere((record) {
       final file = record.file ?? '';
-      return !excludedPaths.any(file.contains);
+      // Optimization: use explicit loop to avoid allocating a bound method
+      // (tear-off) for `file.contains` for every record.
+      for (final excluded in validExcludedPaths) {
+        if (file.contains(excluded)) {
+          return false;
+        }
+      }
+      return true;
     });
     return files;
   }
