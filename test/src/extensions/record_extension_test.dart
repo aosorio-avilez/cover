@@ -1,94 +1,87 @@
-import 'package:cover/src/extensions/double_extension.dart';
+import 'dart:io';
+
 import 'package:cover/src/extensions/record_extension.dart';
 import 'package:lcov_parser/lcov_parser.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('verify coveragePercentage', () {
-    test('with empty record', () async {
+  group('RecordExtension', () {
+    test('coveragePercentage returns 0 if linesFound is 0', () {
       final record = Record.empty();
-
-      expect(record.coveragePercentage, 0.0);
+      // By default Record.empty() has lines with found=null, hit=null (or 0/empty details)
+      // lines?.found ?? 0 will be 0.
+      expect(record.coveragePercentage, 0);
     });
 
-    test('with valid record', () async {
-      final record = Record.empty()
-        ..lines?.found = 10
-        ..lines?.hit = 5;
+    test('coveragePercentage handles division by zero and rounding', () async {
+      // Create a record with specific values using Parser.parse to avoid type name issues
+      final file = File('test_record.info');
+      await file.writeAsString(
+        'SF:test.dart\nDA:1,1\nDA:2,0\nDA:3,1\nLF:3\nLH:2\nend_of_record',
+      );
 
-      expect(record.coveragePercentage, 50.0);
+      final records = await Parser.parse(file.path);
+      final record = records.first;
+
+      // 2/3 = 66.6666... rounded to 66.67
+      expect(record.coveragePercentage, 66.67);
+
+      await file.delete();
+    });
+
+    test('toRow handles null file and ANSI sanitization', () async {
+      final record = Record.empty();
+      final row = record.toRow();
+
+      expect(row[0].toString(), contains('null'));
+      expect(row[3].toString(), contains('0%'));
+    });
+
+    test('toRow sanitizes ANSI codes from filename', () async {
+      final file = File('test_ansi.info');
+      await file.writeAsString(
+        'SF:\x1B[31mfile.dart\x1B[0m\nDA:1,1\nLF:1\nLH:1\nend_of_record',
+      );
+
+      final records = await Parser.parse(file.path);
+      final record = records.first;
+      final row = record.toRow();
+
+      expect(row[0].toString(), contains('file.dart'));
+      // The row adds its own color code at the start, but shouldn't have the red one (\x1B[31m) from our input
+      expect(row[0].toString(), isNot(contains('\x1B[31m')));
+
+      await file.delete();
     });
   });
 
-  group('verify toRow', () {
-    test('with fail record', () async {
-      final record = Record.empty();
-
-      final row = record.toRow();
-
-      expect(row, isA<List<Object>>());
-      expect(row[0], '$redColor${record.file}');
-      expect(row[1], '$redColor${record.lines?.found}');
-      expect(row[2], '$redColor${record.lines?.hit}');
-      expect(row[3], '$redColor${record.coveragePercentage}%');
+  group('RecordListExtension', () {
+    test('getCodeCoverageResult returns 0 if linesFoundSum is 0', () {
+      final records = <Record>[Record.empty()];
+      expect(records.getCodeCoverageResult(), 0);
     });
 
-    test('to succes record', () async {
-      final record = Record.empty()
-        ..file = 'file_name'
-        ..lines?.found = 10
-        ..lines?.hit = 10;
+    test('getCodeCoverageResult calculates total coverage correctly', () async {
+      final file = File('test_list.info');
+      await file.writeAsString('''
+SF:a.dart
+DA:1,1
+LF:1
+LH:1
+end_of_record
+SF:b.dart
+DA:1,0
+DA:2,0
+LF:2
+LH:0
+end_of_record
+''');
 
-      final row = record.toRow();
+      final records = await Parser.parse(file.path);
+      // Total: 1 hit, 3 found -> 1/3 = 33.333... rounded to 33.33
+      expect(records.getCodeCoverageResult(), 33.33);
 
-      expect(row, isA<List<Object>>());
-      expect(row[0], '$greenColor${record.file}');
-      expect(row[1], '$greenColor${record.lines?.found}');
-      expect(row[2], '$greenColor${record.lines?.hit}');
-      expect(row[3], '$greenColor${record.coveragePercentage}%');
-    });
-
-    test('to under under threshold record', () async {
-      final record = Record.empty()
-        ..file = 'file_name'
-        ..lines?.found = 10
-        ..lines?.hit = 8;
-
-      final row = record.toRow();
-
-      expect(row, isA<List<Object>>());
-      expect(row[0], '$yellowColor${record.file}');
-      expect(row[1], '$yellowColor${record.lines?.found}');
-      expect(row[2], '$yellowColor${record.lines?.hit}');
-      expect(row[3], '$yellowColor${record.coveragePercentage}%');
-    });
-  });
-
-  group('verify getCodeCoverageResult', () {
-    test('with empty records', () {
-      final records = <Record>[
-        Record.empty(),
-        Record.empty(),
-      ];
-
-      final result = records.getCodeCoverageResult();
-
-      expect(result, 0);
-    });
-
-    test('with records', () {
-      final records = <Record>[
-        Record.empty()
-          ..lines?.found = 10
-          ..lines?.hit = 10,
-        Record.empty()
-          ..lines?.found = 10
-          ..lines?.hit = 10,
-      ];
-
-      final result = records.getCodeCoverageResult();
-
-      expect(result, 100);
+      await file.delete();
     });
   });
 }

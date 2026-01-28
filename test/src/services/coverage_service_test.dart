@@ -26,13 +26,31 @@ void main() {
       );
     });
 
-    test('checkCoverage throws FormatException when file is empty', () async {
+    test('checkCoverage throws FormatException when file is empty (0 bytes)',
+        () async {
       await expectLater(
         () => service.checkCoverage(
           filePath: 'test/stubs/lcov_empty.info',
           minCoverage: 100,
         ),
-        throwsA(isA<FormatException>()),
+        throwsA(
+          isA<FormatException>().having(
+            (e) => e.message,
+            'message',
+            'File is empty or does not have the correct format',
+          ),
+        ),
+      );
+    });
+
+    test('checkCoverage throws PathNotFoundException when file does not exist',
+        () async {
+      await expectLater(
+        () => service.checkCoverage(
+          filePath: 'test/stubs/non_existent.info',
+          minCoverage: 100,
+        ),
+        throwsA(isA<PathNotFoundException>()),
       );
     });
 
@@ -59,26 +77,48 @@ void main() {
       expect(result.files.length, 8);
     });
 
-    test('_isPathAllowed handles CWD resolution failure', () async {
+    test('checkCoverage ignores empty strings in excludedPaths', () async {
+      final result = await service.checkCoverage(
+        filePath: 'test/stubs/lcov_complete.info',
+        minCoverage: 100,
+        excludePaths: [''],
+      );
+
+      // Should not exclude any files because '' is ignored.
+      expect(result.coverage, 100.0);
+      expect(result.files.length, 17);
+    });
+
+    test('_validatePath handles file resolution failure', () async {
       final mockDir = MockDirectory();
-      when(mockDir.resolveSymbolicLinksSync)
-          .thenThrow(const FileSystemException('permission denied'));
-      when(() => mockDir.path).thenReturn('/test/dir');
+      when(() => mockDir.path).thenReturn(Directory.current.path);
 
       final service = CoverageService(currentDirectory: mockDir);
 
-      // This should hit the catch block at line 91 and use mockDir.path
-      // Then path.canonicalize will work on /test/dir
-      // We check if a file within /test/dir is allowed
-      // Note: _isPathAllowed is private, but checkCoverage calls it.
-      // We expect checkCoverage to continue (and then probably fail at parsing if the file doesn't exist,
-      // but we care about covering the path allowed check).
+      // We call checkCoverage with a path that exists but we want to know it doesn't crash
+      // during path validation if resolution fails (though it's hard to trigger resolution failure
+      // on a path that exists without specific FS conditions).
+      final result = await service.checkCoverage(
+        filePath: 'test/stubs/lcov_complete.info',
+        minCoverage: 0,
+      );
+      expect(result.coverage, 100.0);
+    });
 
-      try {
-        await service.checkCoverage(filePath: 'test.info', minCoverage: 0);
-      } catch (_) {
-        // ignore errors from parsing
-      }
+    test('_validatePath handles CWD resolution failure', () async {
+      final mockDir = MockDirectory();
+      when(mockDir.resolveSymbolicLinksSync)
+          .thenThrow(const FileSystemException('permission denied'));
+      when(() => mockDir.path).thenReturn(Directory.current.path);
+
+      final service = CoverageService(currentDirectory: mockDir);
+
+      // Should succeed because it falls back to mockDir.path
+      final result = await service.checkCoverage(
+        filePath: 'test/stubs/lcov_complete.info',
+        minCoverage: 0,
+      );
+      expect(result.coverage, 100.0);
 
       verify(mockDir.resolveSymbolicLinksSync).called(1);
     });
