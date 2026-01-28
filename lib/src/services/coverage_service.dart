@@ -25,6 +25,20 @@ class CoverageService {
 
     final resolvedPath = _validatePath(filePath);
 
+    final file = File(resolvedPath);
+    if (!file.existsSync()) {
+      throw PathNotFoundException(
+        resolvedPath,
+        const OSError('File not found', 2),
+      );
+    }
+
+    if (file.lengthSync() == 0) {
+      throw const FormatException(
+        'File is empty or does not have the correct format',
+      );
+    }
+
     final files = await _parseCoverageFile(resolvedPath, excludePaths);
 
     if (files.isEmpty) {
