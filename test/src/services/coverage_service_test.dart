@@ -15,56 +15,61 @@ void main() {
   });
 
   group('CoverageService', () {
-    test('checkCoverage throws PathNotFoundException when file path is empty',
-        () async {
-      await expectLater(
-        () => service.checkCoverage(
-          filePath: '',
-          minCoverage: 100,
-        ),
-        throwsA(isA<PathNotFoundException>()),
-      );
-    });
+    test(
+      'checkCoverage throws PathNotFoundException when file path is empty',
+      () async {
+        await expectLater(
+          () => service.checkCoverage(filePath: '', minCoverage: 100),
+          throwsA(isA<PathNotFoundException>()),
+        );
+      },
+    );
 
-    test('checkCoverage throws FormatException when file is empty (0 bytes)',
-        () async {
-      await expectLater(
-        () => service.checkCoverage(
-          filePath: 'test/stubs/lcov_empty.info',
-          minCoverage: 100,
-        ),
-        throwsA(
-          isA<FormatException>().having(
-            (e) => e.message,
-            'message',
-            'File is empty or does not have the correct format',
+    test(
+      'checkCoverage throws FormatException when file is empty (0 bytes)',
+      () async {
+        await expectLater(
+          () => service.checkCoverage(
+            filePath: 'test/stubs/lcov_empty.info',
+            minCoverage: 100,
           ),
-        ),
-      );
-    });
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              'File is empty or does not have the correct format',
+            ),
+          ),
+        );
+      },
+    );
 
-    test('checkCoverage throws PathNotFoundException when file does not exist',
-        () async {
-      await expectLater(
-        () => service.checkCoverage(
-          filePath: 'test/stubs/non_existent.info',
+    test(
+      'checkCoverage throws PathNotFoundException when file does not exist',
+      () async {
+        await expectLater(
+          () => service.checkCoverage(
+            filePath: 'test/stubs/non_existent.info',
+            minCoverage: 100,
+          ),
+          throwsA(isA<PathNotFoundException>()),
+        );
+      },
+    );
+
+    test(
+      'checkCoverage returns correct result for complete coverage',
+      () async {
+        final result = await service.checkCoverage(
+          filePath: 'test/stubs/lcov_complete.info',
           minCoverage: 100,
-        ),
-        throwsA(isA<PathNotFoundException>()),
-      );
-    });
+        );
 
-    test('checkCoverage returns correct result for complete coverage',
-        () async {
-      final result = await service.checkCoverage(
-        filePath: 'test/stubs/lcov_complete.info',
-        minCoverage: 100,
-      );
-
-      expect(result, isA<CoverageResult>());
-      expect(result.coverage, 100.0);
-      expect(result.files.length, 17);
-    });
+        expect(result, isA<CoverageResult>());
+        expect(result.coverage, 100.0);
+        expect(result.files.length, 17);
+      },
+    );
 
     test('checkCoverage filters excluded paths', () async {
       final result = await service.checkCoverage(
@@ -107,8 +112,9 @@ void main() {
 
     test('_validatePath handles CWD resolution failure', () async {
       final mockDir = MockDirectory();
-      when(mockDir.resolveSymbolicLinksSync)
-          .thenThrow(const FileSystemException('permission denied'));
+      when(
+        mockDir.resolveSymbolicLinksSync,
+      ).thenThrow(const FileSystemException('permission denied'));
       when(() => mockDir.path).thenReturn(Directory.current.path);
 
       final service = CoverageService(currentDirectory: mockDir);

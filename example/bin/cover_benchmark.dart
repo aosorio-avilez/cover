@@ -13,20 +13,13 @@ void main() async {
 
   if (!File(benchmarkPath).existsSync()) {
     // ignore: avoid_print
-    print(
-      '''
-Benchmark file not found. Please run generate_lcov_benchmark.dart first.''',
-    );
+    print('''
+Benchmark file not found. Please run generate_lcov_benchmark.dart first.''');
     exit(1);
   }
 
   // Simulate command line arguments
-  final args = [
-    'check',
-    '--path',
-    benchmarkPath,
-    '--no-display-files',
-  ];
+  final args = ['check', '--path', benchmarkPath, '--no-display-files'];
 
   // ignore: avoid_print
   print('Starting benchmark with 10,000 files...');

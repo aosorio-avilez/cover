@@ -7,11 +7,13 @@ void main() {
     expect(coverage.getCoverageColorAnsi(), greenColor);
   });
 
-  test('verify getCoverageColorAnsi return underThresholdColor color',
-      () async {
-    const coverage = 80.0;
-    expect(coverage.getCoverageColorAnsi(), yellowColor);
-  });
+  test(
+    'verify getCoverageColorAnsi return underThresholdColor color',
+    () async {
+      const coverage = 80.0;
+      expect(coverage.getCoverageColorAnsi(), yellowColor);
+    },
+  );
 
   test('verify getCoverageColorAnsi return fail color', () async {
     const coverage = 50.0;

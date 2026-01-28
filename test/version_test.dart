@@ -7,20 +7,21 @@ class ConsoleMock extends Mock implements Console {}
 
 void main() {
   test(
-      'Version spoofing: should ignore local pubspec.yaml and return package version',
-      () async {
-    final console = ConsoleMock();
-    final runner = CoverCommandRunner(console: console);
+    'Version spoofing: should ignore local pubspec.yaml and return package version',
+    () async {
+      final console = ConsoleMock();
+      final runner = CoverCommandRunner(console: console);
 
-    try {
-      await runner.run(['--version']);
+      try {
+        await runner.run(['--version']);
 
-      // Verify that the mocked console received a version string.
-      final captured = verify(() => console.writeLine(captureAny())).captured;
-      final versionOutput = captured.first as String;
+        // Verify that the mocked console received a version string.
+        final captured = verify(() => console.writeLine(captureAny())).captured;
+        final versionOutput = captured.first as String;
 
-      // Check if it matches a version format.
-      expect(versionOutput, matches(RegExp(r'\d+\.\d+\.\d+')));
-    } finally {}
-  });
+        // Check if it matches a version format.
+        expect(versionOutput, matches(RegExp(r'\d+\.\d+\.\d+')));
+      } finally {}
+    },
+  );
 }
