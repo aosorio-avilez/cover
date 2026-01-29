@@ -2,9 +2,10 @@ name: cover_example
 description: An example of how to use the cover package.
 publish_to: 'none'
 version: 1.0.0
+resolution: workspace
 
 environment:
-  sdk: ^3.0.0
+  sdk: ^3.5.0
 
 dependencies:
   cover:

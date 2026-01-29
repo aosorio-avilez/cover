@@ -6,7 +6,8 @@ This document serves as the primary guide for AI agents and developers working o
 
 ## 1. Tech Stack
 
-- **Language:** Dart (>=3.0.0)
+- **Language:** Dart (^3.5.0)
+- **Monorepo Manager:** [Melos](https://melos.invertase.dev/)
 - **CLI Framework:** `package:args` and `package:args/command_runner.dart`
 - **CLI Completion:** `package:cli_completion`
 - **Console UI:** `package:dart_console`
@@ -64,12 +65,13 @@ Internal code is organized by responsibility:
 
 ## 5. Development Commands
 
-Run these commands from the root of the repository:
+This project uses Melos to manage the workspace. Run these commands from the root:
 
-- **Get Dependencies:** `dart pub get`
-- **Analyze Code:** `dart analyze`
-- **Run Tests:** `dart test`
-- **Run Coverage:** `dart test --coverage && dart pub global run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info`
+- **Get Dependencies:** `melos bootstrap` (or `dart pub get`)
+- **Analyze Code:** `melos run analyze`
+- **Run Tests:** `melos run test`
+- **Run Coverage:** `melos run coverage`
+- **Check Coverage:** `melos run check-coverage`
 - **Run CLI Locally:** `dart bin/cover.dart <args>`
 
 ## 6. Rules for Agents
