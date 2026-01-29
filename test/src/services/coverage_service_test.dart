@@ -94,6 +94,17 @@ void main() {
       expect(result.files.length, 17);
     });
 
+    test('checkCoverage handles duplicate excluded paths correctly', () async {
+      final result = await service.checkCoverage(
+        filePath: 'test/stubs/lcov_uncovered.info',
+        minCoverage: 100,
+        excludePaths: ['/datasources', '/datasources'],
+      );
+
+      expect(result.coverage, 100.0);
+      expect(result.files.length, 8);
+    });
+
     test('_validatePath handles file resolution failure', () async {
       final mockDir = MockDirectory();
       when(() => mockDir.path).thenReturn(Directory.current.path);
