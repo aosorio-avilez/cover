@@ -22,3 +22,23 @@
 - Upgraded dependencies to support latest Dart versions.
 - Added full example package in `example/`.
 - Updated development dependencies.
+
+## 0.2.0
+
+- Security improvements:
+    - Fixed path traversal via symlinks.
+    - Added output sanitization to prevent potential vulnerabilities.
+    - Fixed TOCTOU vulnerability in `CoverageService`.
+    - Protected against ReDoS in excluded paths.
+    - Fixed version spoofing vulnerability.
+- Optimizations:
+    - Optimized coverage calculation and formatting.
+    - Improved excluded paths filtering and coverage file filtering.
+    - Optimized regex usage in `RecordExtension`.
+    - Optimized filename sanitization in coverage reports.
+- Bug fixes:
+    - Fixed path exclusion logic to support spaces.
+    - Enforced file path constraints.
+    - Fixed exception leakage in CLI Runner.
+- Documentation:
+    - Added `AGENTS.md` guide for AI agents and developers.
