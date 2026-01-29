@@ -61,8 +61,12 @@ class CoverageService {
 
     // Optimization: Filter out empty strings to avoid matching all files and
     // ensure correctness.
+    if (excludedPaths.isEmpty) {
+      return files;
+    }
+
     final validExcludedPaths =
-        excludedPaths.where((e) => e.isNotEmpty).toList();
+        excludedPaths.where((e) => e.isNotEmpty).toSet().toList();
 
     if (validExcludedPaths.isEmpty) {
       return files;
