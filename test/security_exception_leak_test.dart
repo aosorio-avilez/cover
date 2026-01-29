@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:cover/src/cover_command_runner.dart';
 import 'package:cover/src/models/exit_code.dart';
 import 'package:dart_console/dart_console.dart';
@@ -24,14 +25,14 @@ void main() {
       expect(exitCode, equals(ExitCode.usage.code));
 
       // Verify error message was printed
-      final captured = verify(() => console.writeErrorLine(captureAny())).captured;
+      final captured =
+          verify(() => console.writeErrorLine(captureAny())).captured;
       final message = captured.first as String;
 
       // Verify the message indicates a parsing failure and NOT a raw internal error
       expect(message, contains('Failed to parse coverage file'));
-
     } finally {
-      if (await file.exists()) await file.delete();
+      if (file.existsSync()) await file.delete();
     }
   });
 }

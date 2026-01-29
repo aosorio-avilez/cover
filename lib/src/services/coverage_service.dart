@@ -61,7 +61,7 @@ class CoverageService {
     try {
       files = await Parser.parse(filePath);
     } catch (e) {
-      throw FormatException('Failed to parse coverage file: ${e.toString()}');
+      throw FormatException('Failed to parse coverage file: $e');
     }
 
     // Optimization: Filter out empty strings to avoid matching all files and
