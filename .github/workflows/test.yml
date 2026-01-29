@@ -25,18 +25,16 @@ jobs:
         run: ./.github/workflows/scripts/install-tools.sh
 
       - name: 📦 Install Dependencies
-        run: dart pub get
+        run: melos bootstrap
 
       - name: ✨ Check Formatting
-        run: dart format --set-exit-if-changed lib test
+        run: melos format:check
 
       - name: 🕵️ Analyze
-        run: dart analyze lib test
+        run: melos analyze
 
       - name: 🧪 Run Tests with Coverage
-        run: |
-          dart test -j 4 --test-randomize-ordering-seed random --coverage=coverage
-          format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib
+        run: melos coverage
 
       - name: 📊 Code Coverage
-        run: cover check
+        run: melos check-coverage

@@ -22,12 +22,10 @@ jobs:
         run: ./.github/workflows/scripts/install-tools.sh
 
       - name: 📦 Install Dependencies
-        run: dart pub get
+        run: melos bootstrap
 
       - name: 🧪 Run Tests with Coverage
-        run: |
-          dart test -j 4 --test-randomize-ordering-seed random --coverage=coverage
-          format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib
+        run: melos coverage
       
       - name: 📊 Upload Code Coverage
         uses: codecov/codecov-action@v3
