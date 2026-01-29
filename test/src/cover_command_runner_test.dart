@@ -39,16 +39,22 @@ void main() {
   });
 
   test('''verify cover command runner catch FormatException''', () async {
-    final exitCode = await commandRunner
-        .run(['check', '--path', 'test/stubs/lcov_empty.info']);
+    final exitCode = await commandRunner.run([
+      'check',
+      '--path',
+      'test/stubs/lcov_empty.info',
+    ]);
 
     expect(exitCode, ExitCode.usage.code);
     verifyConsoleWrites(console);
   });
 
   test('''verify cover command runner catch PathNotFoundException''', () async {
-    final exitCode = await commandRunner
-        .run(['check', '--path', 'coverage/path-not-found.info']);
+    final exitCode = await commandRunner.run([
+      'check',
+      '--path',
+      'coverage/path-not-found.info',
+    ]);
 
     expect(exitCode, ExitCode.osFile.code);
     verifyConsoleWrites(console);
@@ -56,8 +62,10 @@ void main() {
 
   test('verify cover command runner catch FileMustBeProvided', () async {
     final service = CoverageServiceMock();
-    final commandRunner =
-        CoverCommandRunner(console: console, service: service);
+    final commandRunner = CoverCommandRunner(
+      console: console,
+      service: service,
+    );
 
     when(
       () => service.checkCoverage(
@@ -66,8 +74,11 @@ void main() {
       ),
     ).thenThrow(FileMustBeProvided());
 
-    final exitCode =
-        await commandRunner.run(['check', '--path', 'coverage/lcov.info']);
+    final exitCode = await commandRunner.run([
+      'check',
+      '--path',
+      'coverage/lcov.info',
+    ]);
 
     expect(exitCode, ExitCode.osFile.code);
     verifyConsoleWrites(console);

@@ -32,13 +32,13 @@ void main() {
   });
 
   test(
-      'Output Sanitization: verify filename with ANSI codes is displayed (reproduction)',
-      () async {
-    // \x1b[31m is Red color in ANSI.
-    const maliciousFilename = 'malicious\x1b[31m.dart';
-    const escapedFilename = 'malicious.dart'; // We expect this after fix
+    'Output Sanitization: verify filename with ANSI codes is displayed (reproduction)',
+    () async {
+      // \x1b[31m is Red color in ANSI.
+      const maliciousFilename = 'malicious\x1b[31m.dart';
+      const escapedFilename = 'malicious.dart'; // We expect this after fix
 
-    await lcovFile.writeAsString('''
+      await lcovFile.writeAsString('''
 TN:
 SF:$maliciousFilename
 DA:1,1
@@ -47,19 +47,24 @@ LH:1
 end_of_record
 ''');
 
-    // Run the command. Path is relative to tempDir because CoverageService knows its CWD.
-    final exitCode =
-        await runner.run(['check', '--path', 'lcov.info', '--display-files']);
+      // Run the command. Path is relative to tempDir because CoverageService knows its CWD.
+      final exitCode = await runner.run([
+        'check',
+        '--path',
+        'lcov.info',
+        '--display-files',
+      ]);
 
-    expect(exitCode, ExitCode.success.code);
+      expect(exitCode, ExitCode.success.code);
 
-    final captured = verify(() => console.write(captureAny())).captured;
-    expect(captured.length, greaterThanOrEqualTo(1));
+      final captured = verify(() => console.write(captureAny())).captured;
+      expect(captured.length, greaterThanOrEqualTo(1));
 
-    final table = captured.first as Table;
-    final tableString = table.toString();
+      final table = captured.first as Table;
+      final tableString = table.toString();
 
-    expect(tableString, isNot(contains(maliciousFilename)));
-    expect(tableString, contains(escapedFilename));
-  });
+      expect(tableString, isNot(contains(maliciousFilename)));
+      expect(tableString, contains(escapedFilename));
+    },
+  );
 }

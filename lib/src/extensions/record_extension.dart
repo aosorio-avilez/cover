@@ -1,8 +1,9 @@
 import 'package:cover/src/extensions/double_extension.dart';
 import 'package:lcov_parser/lcov_parser.dart';
 
-final _ansiAndControlRegExp =
-    RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]|[\x00-\x1F\x7F]');
+final _ansiAndControlRegExp = RegExp(
+  r'\x1B\[[0-?]*[ -/]*[@-~]|[\x00-\x1F\x7F]',
+);
 
 extension RecordExtension on Record {
   double get coveragePercentage {
@@ -17,8 +18,12 @@ extension RecordExtension on Record {
   List<Object> toRow() {
     final percentage = coveragePercentage;
     final color = percentage.getCoverageColorAnsi();
-    final sanitizedFile =
-        (file ?? 'null').replaceAll(_ansiAndControlRegExp, '');
+    final fileName = file ?? 'null';
+    // Optimization: check for control characters before using `replaceAll`
+    // to avoid regex overhead on clean strings (which is the common case).
+    final sanitizedFile = _hasAnsiOrControlChars(fileName)
+        ? fileName.replaceAll(_ansiAndControlRegExp, '')
+        : fileName;
     return <Object>[
       '$color$sanitizedFile',
       '$color${lines?.found}',
@@ -26,6 +31,17 @@ extension RecordExtension on Record {
       '$color$percentage%',
     ];
   }
+}
+
+bool _hasAnsiOrControlChars(String s) {
+  for (var i = 0; i < s.length; i++) {
+    final code = s.codeUnitAt(i);
+    // 0x00-0x1F (control chars including \x1B) and 0x7F (DEL)
+    if (code <= 0x1F || code == 0x7F) {
+      return true;
+    }
+  }
+  return false;
 }
 
 extension RecordListExtension on List<Record> {

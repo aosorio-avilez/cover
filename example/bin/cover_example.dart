@@ -7,11 +7,7 @@ void main() async {
   final runner = CoverCommandRunner();
 
   // Simulate command line arguments
-  final args = [
-    'check',
-    '--path',
-    'params/lcov.info',
-  ];
+  final args = ['check', '--path', 'params/lcov.info'];
 
   // Run the command
   final exitCode = await runner.run(args);

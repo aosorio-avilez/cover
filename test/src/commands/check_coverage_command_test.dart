@@ -23,8 +23,11 @@ void main() {
   });
 
   test('verify check coverage command return success exit code', () async {
-    final exitCode =
-        await runner.run(['check', '--path', 'test/stubs/lcov_complete.info']);
+    final exitCode = await runner.run([
+      'check',
+      '--path',
+      'test/stubs/lcov_complete.info',
+    ]);
 
     expect(exitCode, ExitCode.success.code);
     verify(() => console.write(any())).called(1);
@@ -33,8 +36,11 @@ void main() {
   });
 
   test('verify check coverage command return fail exit code', () async {
-    final exitCode = await runner
-        .run(['check', '--path', 'test/stubs/lcov_incomplete.info']);
+    final exitCode = await runner.run([
+      'check',
+      '--path',
+      'test/stubs/lcov_incomplete.info',
+    ]);
 
     expect(exitCode, ExitCode.fail.code);
     verify(() => console.write(any())).called(1);
@@ -43,8 +49,11 @@ void main() {
   });
 
   test('verify check coverage command return os file exit code', () async {
-    final exitCode =
-        await runner.run(['check', '--path', 'test/stubs/file_not_found.info']);
+    final exitCode = await runner.run([
+      'check',
+      '--path',
+      'test/stubs/file_not_found.info',
+    ]);
 
     expect(exitCode, ExitCode.osFile.code);
     verifyNever(() => console.write(any()));
@@ -60,44 +69,52 @@ void main() {
   });
 
   test(
-      '''verify check coverage command return fail exit code when file is empty''',
-      () async {
-    final exitCode =
-        await runner.run(['check', '--path', 'test/stubs/lcov_empty.info']);
+    '''verify check coverage command return fail exit code when file is empty''',
+    () async {
+      final exitCode = await runner.run([
+        'check',
+        '--path',
+        'test/stubs/lcov_empty.info',
+      ]);
 
-    expect(exitCode, ExitCode.usage.code);
-    verifyNever(() => console.write(any()));
-    verifyNever(() => console.resetColorAttributes());
-  });
+      expect(exitCode, ExitCode.usage.code);
+      verifyNever(() => console.write(any()));
+      verifyNever(() => console.resetColorAttributes());
+    },
+  );
 
-  test('''verify check command no display table with --no-display-files flag''',
-      () async {
-    final exitCode = await runner.run([
-      'check',
-      '--path',
-      'test/stubs/lcov_complete.info',
-      '--no-display-files',
-    ]);
+  test(
+    '''verify check command no display table with --no-display-files flag''',
+    () async {
+      final exitCode = await runner.run([
+        'check',
+        '--path',
+        'test/stubs/lcov_complete.info',
+        '--no-display-files',
+      ]);
 
-    expect(exitCode, ExitCode.success.code);
-    verifyNever(() => console.write(any()));
-    verify(() => console.writeLine(any())).called(2);
-    verify(() => console.resetColorAttributes()).called(1);
-  });
+      expect(exitCode, ExitCode.success.code);
+      verifyNever(() => console.write(any()));
+      verify(() => console.writeLine(any())).called(2);
+      verify(() => console.resetColorAttributes()).called(1);
+    },
+  );
 
-  test('verify check coverage command exclude paths with --excluded-files flag',
-      () async {
-    final exitCode = await runner.run([
-      'check',
-      '--path',
-      'test/stubs/lcov_uncovered.info',
-      '--excluded-paths',
-      '/datasources',
-    ]);
+  test(
+    'verify check coverage command exclude paths with --excluded-files flag',
+    () async {
+      final exitCode = await runner.run([
+        'check',
+        '--path',
+        'test/stubs/lcov_uncovered.info',
+        '--excluded-paths',
+        '/datasources',
+      ]);
 
-    expect(exitCode, ExitCode.success.code);
-    verify(() => console.write(any())).called(1);
-    verify(() => console.writeLine(any())).called(2);
-    verify(() => console.resetColorAttributes()).called(1);
-  });
+      expect(exitCode, ExitCode.success.code);
+      verify(() => console.write(any())).called(1);
+      verify(() => console.writeLine(any())).called(2);
+      verify(() => console.resetColorAttributes()).called(1);
+    },
+  );
 }

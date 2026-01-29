@@ -49,10 +49,7 @@ class CoverageService {
 
     final currentCoverage = files.getCodeCoverageResult();
 
-    return CoverageResult(
-      coverage: currentCoverage,
-      files: files,
-    );
+    return CoverageResult(coverage: currentCoverage, files: files);
   }
 
   Future<List<Record>> _parseCoverageFile(
