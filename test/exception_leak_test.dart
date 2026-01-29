@@ -22,14 +22,17 @@ void main() {
     runner = CoverCommandRunner(console: console, service: service);
   });
 
-  test('Exception Leakage: should catch FileSystemException and exit gracefully',
+  test(
+      'Exception Leakage: should catch FileSystemException and exit gracefully',
       () async {
     // Arrange
-    when(() => service.checkCoverage(
-          filePath: any(named: 'filePath'),
-          minCoverage: any(named: 'minCoverage'),
-          excludePaths: any(named: 'excludePaths'),
-        )).thenThrow(
+    when(
+      () => service.checkCoverage(
+        filePath: any(named: 'filePath'),
+        minCoverage: any(named: 'minCoverage'),
+        excludePaths: any(named: 'excludePaths'),
+      ),
+    ).thenThrow(
       const FileSystemException('Access denied', 'coverage/lcov.info'),
     );
 
