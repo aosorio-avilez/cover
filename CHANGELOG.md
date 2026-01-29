@@ -23,6 +23,13 @@
 - Added full example package in `example/`.
 - Updated development dependencies.
 
+## 0.3.0
+
+- Integrated **Melos** as a workspace manager using **Dart Workspaces**.
+- Upgraded minimum Dart SDK to `3.5.0`.
+- Unified local development and CI/CD commands via Melos scripts.
+- Updated project documentation for developer workflows.
+
 ## 0.2.0
 
 - Security improvements:
