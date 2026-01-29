@@ -57,7 +57,12 @@ class CoverageService {
     List<String> excludedPaths,
   ) async {
     // Note: filePath is now expected to be a validated, absolute path.
-    final files = await Parser.parse(filePath);
+    List<Record> files;
+    try {
+      files = await Parser.parse(filePath);
+    } catch (e) {
+      throw FormatException('Failed to parse coverage file: $e');
+    }
 
     // Optimization: Filter out empty strings to avoid matching all files and
     // ensure correctness.
