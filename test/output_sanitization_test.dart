@@ -67,4 +67,37 @@ end_of_record
       expect(tableString, contains(escapedFilename));
     },
   );
+
+  test(
+    'Output Sanitization: verify filename with Unicode Bidi control chars is sanitized',
+    () async {
+      const spoofFilename = 'exe\u202E.txt'; // 'exe' + RTLO + '.txt'
+      const sanitizedFilename = 'exe.txt';
+
+      await lcovFile.writeAsString('''
+TN:
+SF:$spoofFilename
+DA:1,1
+LF:1
+LH:1
+end_of_record
+''');
+
+      final exitCode = await runner.run([
+        'check',
+        '--path',
+        'lcov.info',
+        '--display-files',
+      ]);
+
+      expect(exitCode, ExitCode.success.code);
+
+      final captured = verify(() => console.write(captureAny())).captured;
+      final table = captured.first as Table;
+      final tableString = table.toString();
+
+      expect(tableString, isNot(contains('\u202E')));
+      expect(tableString, contains(sanitizedFilename));
+    },
+  );
 }

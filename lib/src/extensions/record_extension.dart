@@ -2,7 +2,7 @@ import 'package:cover/src/extensions/double_extension.dart';
 import 'package:lcov_parser/lcov_parser.dart';
 
 final _ansiAndControlRegExp = RegExp(
-  r'\x1B\[[0-?]*[ -/]*[@-~]|[\x00-\x1F\x7F]',
+  r'\x1B\[[0-?]*[ -/]*[@-~]|[\x00-\x1F\x7F]|[\u200E\u200F\u061C\u202A-\u202E\u2066-\u2069]',
 );
 
 extension RecordExtension on Record {
@@ -40,6 +40,15 @@ bool _hasAnsiOrControlChars(String s) {
     if (code <= 0x1F || code == 0x7F) {
       return true;
     }
+    // Unicode Bidi Control characters
+    // U+061C (ALM)
+    if (code == 0x061C) return true;
+    // U+200E (LRM), U+200F (RLM)
+    if (code == 0x200E || code == 0x200F) return true;
+    // U+202A - U+202E (Embeddings/Overrides)
+    if (code >= 0x202A && code <= 0x202E) return true;
+    // U+2066 - U+2069 (Isolates)
+    if (code >= 0x2066 && code <= 0x2069) return true;
   }
   return false;
 }
