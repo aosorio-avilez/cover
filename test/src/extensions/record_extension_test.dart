@@ -53,6 +53,25 @@ void main() {
 
       await file.delete();
     });
+
+    test('toRow sanitizes Unicode Bidi control characters', () async {
+      final file = File('test_bidi.info');
+      // Filename with Right-to-Left Override (U+202E)
+      const maliciousFilename = 'test\u202Etxt.js';
+      await file.writeAsString(
+        'SF:$maliciousFilename\nDA:1,1\nLF:1\nLH:1\nend_of_record',
+      );
+
+      final records = await Parser.parse(file.path);
+      final record = records.first;
+      final row = record.toRow();
+
+      // Should be sanitized to 'testtxt.js'
+      expect(row[0].toString(), contains('testtxt.js'));
+      expect(row[0].toString(), isNot(contains('\u202E')));
+
+      await file.delete();
+    });
   });
 
   group('RecordListExtension', () {
