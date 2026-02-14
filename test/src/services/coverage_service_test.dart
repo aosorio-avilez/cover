@@ -125,7 +125,9 @@ void main() {
       final mockDir = MockDirectory();
       when(
         mockDir.resolveSymbolicLinks,
-      ).thenAnswer((_) async => throw const FileSystemException('permission denied'));
+      ).thenAnswer(
+        (_) async => throw const FileSystemException('permission denied'),
+      );
       when(() => mockDir.path).thenReturn(Directory.current.path);
 
       final service = CoverageService(currentDirectory: mockDir);
