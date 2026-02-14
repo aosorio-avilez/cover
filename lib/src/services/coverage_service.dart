@@ -26,14 +26,14 @@ class CoverageService {
     final resolvedPath = await _validatePath(filePath);
 
     final file = File(resolvedPath);
-    if (!file.existsSync()) {
+    if (!await file.exists()) {
       throw PathNotFoundException(
         resolvedPath,
         const OSError('File not found', 2),
       );
     }
 
-    if (file.lengthSync() == 0) {
+    if (await file.length() == 0) {
       throw const FormatException(
         'File is empty or does not have the correct format',
       );
