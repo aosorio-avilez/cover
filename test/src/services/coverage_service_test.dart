@@ -124,8 +124,10 @@ void main() {
     test('_validatePath handles CWD resolution failure', () async {
       final mockDir = MockDirectory();
       when(
-        mockDir.resolveSymbolicLinksSync,
-      ).thenThrow(const FileSystemException('permission denied'));
+        mockDir.resolveSymbolicLinks,
+      ).thenAnswer(
+        (_) async => throw const FileSystemException('permission denied'),
+      );
       when(() => mockDir.path).thenReturn(Directory.current.path);
 
       final service = CoverageService(currentDirectory: mockDir);
@@ -137,7 +139,7 @@ void main() {
       );
       expect(result.coverage, 100.0);
 
-      verify(mockDir.resolveSymbolicLinksSync).called(1);
+      verify(mockDir.resolveSymbolicLinks).called(1);
     });
   });
 }
