@@ -23,7 +23,7 @@ class CoverageService {
       );
     }
 
-    final resolvedPath = _validatePath(filePath);
+    final resolvedPath = await _validatePath(filePath);
 
     final file = File(resolvedPath);
     if (!file.existsSync()) {
@@ -96,14 +96,14 @@ class CoverageService {
     return files;
   }
 
-  String _validatePath(String filePath) {
+  Future<String> _validatePath(String filePath) async {
     final absolutePath = path.isAbsolute(filePath)
         ? filePath
         : path.join(_currentDirectory.path, filePath);
 
     String resolvedPath;
     try {
-      resolvedPath = File(absolutePath).resolveSymbolicLinksSync();
+      resolvedPath = await File(absolutePath).resolveSymbolicLinks();
     } catch (_) {
       resolvedPath = absolutePath;
     }
@@ -112,7 +112,7 @@ class CoverageService {
 
     String currentResolvedPath;
     try {
-      currentResolvedPath = _currentDirectory.resolveSymbolicLinksSync();
+      currentResolvedPath = await _currentDirectory.resolveSymbolicLinks();
     } catch (_) {
       currentResolvedPath = _currentDirectory.path;
     }
