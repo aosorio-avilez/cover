@@ -78,6 +78,9 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
     } on FileMustBeProvided catch (e) {
       printError(e.errMsg());
       return ExitCode.osFile.code;
+    } catch (e) {
+      _console.writeErrorLine('An unexpected error occurred: $e');
+      return ExitCode.software.code;
     }
   }
 
@@ -100,15 +103,21 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
   }
 
   Future<String> getVersion() async {
-    final packageUri = Uri.parse('package:cover/');
-    final packagePath = await Isolate.resolvePackageUri(packageUri);
-    final pubspecPath = packagePath?.resolve('../pubspec.yaml');
+    try {
+      final packageUri = Uri.parse('package:cover/');
+      final packagePath = await Isolate.resolvePackageUri(packageUri);
+      if (packagePath == null) return 'unknown';
 
-    if (pubspecPath != null) {
-      final fileContent = await File.fromUri(pubspecPath).readAsString();
+      final pubspecPath = packagePath.resolve('../pubspec.yaml');
+      final pubspecFile = File.fromUri(pubspecPath);
+
+      if (!await pubspecFile.exists()) return 'unknown';
+
+      final fileContent = await pubspecFile.readAsString();
       final pubspec = Pubspec.parse(fileContent);
-      return pubspec.version!.toString();
+      return pubspec.version?.toString() ?? 'unknown';
+    } catch (_) {
+      return 'unknown';
     }
-    return 'unknown';
   }
 }

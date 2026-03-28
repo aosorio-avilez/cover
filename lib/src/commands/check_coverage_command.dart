@@ -91,9 +91,23 @@ class CheckCoverageCommand extends Command<int> {
   }
 
   double getMinCoverageArgument() {
-    final minCoverage =
-        globalResults?[minCoverageArgumentName] as String? ?? '';
-    return double.tryParse(minCoverage) ?? defaultMinCoverage;
+    final minCoverageArg = globalResults?[minCoverageArgumentName] as String?;
+
+    if (minCoverageArg == null || minCoverageArg.isEmpty) {
+      return defaultMinCoverage;
+    }
+
+    final minCoverage = double.tryParse(minCoverageArg);
+
+    if (minCoverage == null || minCoverage < 0 || minCoverage > 100) {
+      throw UsageException(
+        'Invalid value for --$minCoverageArgumentName. '
+        'Expected a number between 0 and 100.',
+        '--$minCoverageArgumentName $minCoverageArg',
+      );
+    }
+
+    return minCoverage;
   }
 
   String getPathArgument() {
