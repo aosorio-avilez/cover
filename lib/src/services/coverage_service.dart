@@ -10,6 +10,7 @@ class CoverageService {
       : _currentDirectory = currentDirectory ?? Directory.current;
 
   final Directory _currentDirectory;
+  Future<String>? _resolvedCurrentDirectoryPath;
 
   Future<CoverageResult> checkCoverage({
     required String filePath,
@@ -70,28 +71,23 @@ class CoverageService {
       return files;
     }
 
-    final validExcludedPaths =
-        excludedPaths.where((e) => e.isNotEmpty).toSet().toList();
+    final validExcludedPaths = excludedPaths.where((e) => e.isNotEmpty).toSet();
 
     if (validExcludedPaths.isEmpty) {
       return files;
     }
 
-    // Optimization: Use `String.contains` instead of `RegExp` to avoid
-    // compilation overhead. Use `retainWhere` to modify the list in-place,
-    // avoiding extra list allocation and copying.
+    // Optimization: Using a single RegExp with alternation is significantly
+    // faster than iterating through the list with String.contains for larger
+    // sets of excluded paths.
+    final pattern = validExcludedPaths.map(RegExp.escape).join('|');
+    final regExp = RegExp(pattern);
+
     // Note: `files` is a fresh list from `Parser.parse`, so we can mutate it
     // safely.
     files.retainWhere((record) {
       final file = record.file ?? '';
-      // Optimization: use explicit loop to avoid allocating a bound method
-      // (tear-off) for `file.contains` for every record.
-      for (final excluded in validExcludedPaths) {
-        if (file.contains(excluded)) {
-          return false;
-        }
-      }
-      return true;
+      return !regExp.hasMatch(file);
     });
     return files;
   }
@@ -110,9 +106,13 @@ class CoverageService {
 
     final canonicalPath = path.canonicalize(resolvedPath);
 
+    // Optimization: Cache the resolved symbolic link path of the current
+    // directory to avoid redundant asynchronous I/O operations.
+    _resolvedCurrentDirectoryPath ??= _currentDirectory.resolveSymbolicLinks();
+
     String currentResolvedPath;
     try {
-      currentResolvedPath = await _currentDirectory.resolveSymbolicLinks();
+      currentResolvedPath = await _resolvedCurrentDirectoryPath!;
     } catch (_) {
       currentResolvedPath = _currentDirectory.path;
     }
