@@ -17,27 +17,37 @@ void main() {
   });
 
   group('Robustness Tests', () {
-    test('verify check coverage command fails with invalid min-coverage (too high)', () async {
+    test(
+        'verify check coverage command fails with invalid min-coverage (too high)',
+        () async {
       final exitCode = await runner.run(['check', '--min-coverage', '101']);
       expect(exitCode, ExitCode.usage.code);
-      verify(() => console.writeErrorLine(contains('Expected a number between 0 and 100'))).called(1);
+      verify(() => console.writeErrorLine(
+          contains('Expected a number between 0 and 100'))).called(1);
     });
 
-    test('verify check coverage command fails with invalid min-coverage (too low)', () async {
+    test(
+        'verify check coverage command fails with invalid min-coverage (too low)',
+        () async {
       final exitCode = await runner.run(['check', '--min-coverage', '-1']);
       expect(exitCode, ExitCode.usage.code);
-      verify(() => console.writeErrorLine(contains('Expected a number between 0 and 100'))).called(1);
+      verify(() => console.writeErrorLine(
+          contains('Expected a number between 0 and 100'))).called(1);
     });
 
-    test('verify check coverage command fails with invalid min-coverage (not a number)', () async {
+    test(
+        'verify check coverage command fails with invalid min-coverage (not a number)',
+        () async {
       final exitCode = await runner.run(['check', '--min-coverage', 'abc']);
       expect(exitCode, ExitCode.usage.code);
-      verify(() => console.writeErrorLine(contains('Expected a number between 0 and 100'))).called(1);
+      verify(() => console.writeErrorLine(
+          contains('Expected a number between 0 and 100'))).called(1);
     });
 
     test('verify global exception handler catches unexpected errors', () async {
       final service = CoverageServiceMock();
-      final runnerWithMock = CoverCommandRunner(console: console, service: service);
+      final runnerWithMock =
+          CoverCommandRunner(console: console, service: service);
 
       when(() => service.checkCoverage(
             filePath: any(named: 'filePath'),
@@ -48,7 +58,9 @@ void main() {
       final exitCode = await runnerWithMock.run(['check']);
 
       expect(exitCode, ExitCode.software.code);
-      verify(() => console.writeErrorLine(contains('An unexpected error occurred: Bad state: Unexpected state'))).called(1);
+      verify(() => console.writeErrorLine(contains(
+              'An unexpected error occurred: Bad state: Unexpected state')))
+          .called(1);
     });
   });
 }

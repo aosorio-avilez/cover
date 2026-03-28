@@ -102,7 +102,7 @@ class CheckCoverageCommand extends Command<int> {
     if (minCoverage == null || minCoverage < 0 || minCoverage > 100) {
       throw UsageException(
         'Invalid value for --$minCoverageArgumentName. '
-        'Expected a number between 0 and 100.',
+            'Expected a number between 0 and 100.',
         '--$minCoverageArgumentName $minCoverageArg',
       );
     }
