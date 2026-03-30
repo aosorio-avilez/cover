@@ -108,6 +108,9 @@ void main() {
     test('_validatePath handles file resolution failure', () async {
       final mockDir = MockDirectory();
       when(() => mockDir.path).thenReturn(Directory.current.path);
+      when(mockDir.resolveSymbolicLinks).thenAnswer(
+        (_) async => throw const FileSystemException('resolution failed'),
+      );
 
       final service = CoverageService(currentDirectory: mockDir);
 
