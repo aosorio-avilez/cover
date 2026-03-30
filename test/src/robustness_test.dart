@@ -22,8 +22,11 @@ void main() {
         () async {
       final exitCode = await runner.run(['check', '--min-coverage', '101']);
       expect(exitCode, ExitCode.usage.code);
-      verify(() => console.writeErrorLine(
-          contains('Expected a number between 0 and 100'))).called(1);
+      verify(
+        () => console.writeErrorLine(
+          contains('Expected a number between 0 and 100'),
+        ),
+      ).called(1);
     });
 
     test(
@@ -31,8 +34,11 @@ void main() {
         () async {
       final exitCode = await runner.run(['check', '--min-coverage', '-1']);
       expect(exitCode, ExitCode.usage.code);
-      verify(() => console.writeErrorLine(
-          contains('Expected a number between 0 and 100'))).called(1);
+      verify(
+        () => console.writeErrorLine(
+          contains('Expected a number between 0 and 100'),
+        ),
+      ).called(1);
     });
 
     test(
@@ -40,8 +46,11 @@ void main() {
         () async {
       final exitCode = await runner.run(['check', '--min-coverage', 'abc']);
       expect(exitCode, ExitCode.usage.code);
-      verify(() => console.writeErrorLine(
-          contains('Expected a number between 0 and 100'))).called(1);
+      verify(
+        () => console.writeErrorLine(
+          contains('Expected a number between 0 and 100'),
+        ),
+      ).called(1);
     });
 
     test('verify global exception handler catches unexpected errors', () async {
@@ -49,18 +58,24 @@ void main() {
       final runnerWithMock =
           CoverCommandRunner(console: console, service: service);
 
-      when(() => service.checkCoverage(
-            filePath: any(named: 'filePath'),
-            minCoverage: any(named: 'minCoverage'),
-            excludePaths: any(named: 'excludePaths'),
-          )).thenThrow(StateError('Unexpected state'));
+      when(
+        () => service.checkCoverage(
+          filePath: any(named: 'filePath'),
+          minCoverage: any(named: 'minCoverage'),
+          excludePaths: any(named: 'excludePaths'),
+        ),
+      ).thenThrow(StateError('Unexpected state'));
 
       final exitCode = await runnerWithMock.run(['check']);
 
       expect(exitCode, ExitCode.software.code);
-      verify(() => console.writeErrorLine(contains(
-              'An unexpected error occurred: Bad state: Unexpected state')))
-          .called(1);
+      verify(
+        () => console.writeErrorLine(
+          contains(
+            'An unexpected error occurred: Bad state: Unexpected state',
+          ),
+        ),
+      ).called(1);
     });
   });
 }
