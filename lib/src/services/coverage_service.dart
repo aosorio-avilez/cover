@@ -26,15 +26,18 @@ class CoverageService {
 
     final resolvedPath = await _validatePath(filePath);
 
-    final file = File(resolvedPath);
-    if (!await file.exists()) {
+    // Optimization: use FileStat.stat() to retrieve existence, type, and size
+    // in a single I/O operation (up to 2x faster than separate calls).
+    final stat = await FileStat.stat(resolvedPath);
+    if (stat.type == FileSystemEntityType.notFound ||
+        stat.type != FileSystemEntityType.file) {
       throw PathNotFoundException(
         resolvedPath,
         const OSError('File not found', 2),
       );
     }
 
-    if (await file.length() == 0) {
+    if (stat.size == 0) {
       throw const FormatException(
         'File is empty or does not have the correct format',
       );
