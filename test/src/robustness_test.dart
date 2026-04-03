@@ -53,8 +53,7 @@ void main() {
       ).called(1);
     });
 
-    test(
-        'verify check coverage command fails with invalid min-coverage (NaN)',
+    test('verify check coverage command fails with invalid min-coverage (NaN)',
         () async {
       final exitCode = await runner.run(['check', '--min-coverage', 'NaN']);
       expect(exitCode, ExitCode.usage.code);
