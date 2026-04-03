@@ -53,6 +53,24 @@ void main() {
 
       await file.delete();
     });
+
+    test('toRow sanitizes Bidi control characters from filename', () async {
+      final file = File('test_bidi.info');
+      // Using U+202E (Right-to-Left Override)
+      await file.writeAsString(
+        'SF:file.dart\u202Ecod.exe\nDA:1,1\nLF:1\nLH:1\nend_of_record',
+      );
+
+      final records = await Parser.parse(file.path);
+      final record = records.first;
+      final row = record.toRow();
+
+      final fileNameInRow = row[0].toString();
+      expect(fileNameInRow, contains('file.dartcod.exe'));
+      expect(fileNameInRow, isNot(contains('\u202E')));
+
+      await file.delete();
+    });
   });
 
   group('RecordListExtension', () {
