@@ -99,7 +99,10 @@ class CheckCoverageCommand extends Command<int> {
 
     final minCoverage = double.tryParse(minCoverageArg);
 
-    if (minCoverage == null || minCoverage < 0 || minCoverage > 100) {
+    if (minCoverage == null ||
+        minCoverage.isNaN ||
+        minCoverage < 0 ||
+        minCoverage > 100) {
       throw UsageException(
         'Invalid value for --$minCoverageArgumentName. '
             'Expected a number between 0 and 100.',
