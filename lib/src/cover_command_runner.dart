@@ -111,9 +111,9 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
       final pubspecPath = packagePath.resolve('../pubspec.yaml');
       final pubspecFile = File.fromUri(pubspecPath);
 
-      if (!await pubspecFile.exists()) return 'unknown';
+      if (!pubspecFile.existsSync()) return 'unknown';
 
-      final fileContent = await pubspecFile.readAsString();
+      final fileContent = pubspecFile.readAsStringSync();
       final pubspec = Pubspec.parse(fileContent);
       return pubspec.version?.toString() ?? 'unknown';
     } catch (_) {
