@@ -1,34 +1,11 @@
-## 0.0.1
-
-- Initial version.
-
-## 0.0.2
-
-- Flag `--version` was added in order to show the current version
-- Flag `--display-files` was added in order to show/hide coverage files 
-
-## 0.0.3
-
-- Fixed an issue with the final coverage percentage calculation
-
-## 0.0.4
-
-- Flag `--excluded-paths` was added in order to exclude folders/files from coverage 
-
-## 0.1.0
-
-- Refactored architecture to introduce `CoverageService` for better testability and programatic usage.
-- Added `CheckCoverageCommand` support for programatic usage.
-- Upgraded dependencies to support latest Dart versions.
-- Added full example package in `example/`.
-- Updated development dependencies.
-
 ## 0.3.0
 
-- Integrated **Melos** as a workspace manager using **Dart Workspaces**.
-- Upgraded minimum Dart SDK to `3.5.0`.
-- Unified local development and CI/CD commands via Melos scripts.
-- Updated project documentation for developer workflows.
+- **Feat**: Integrated **Melos** as a workspace manager using **Dart Workspaces**.
+- **Refactor**: Optimized `CoverageService` with **non-blocking/async I/O** for file operations and path resolution.
+- **Fix**: Improved robustness of `min-coverage` validation and enhanced global error handling in CLI commands.
+- **Perf**: Optimized file metadata retrieval and path exclusion filtering.
+- **Fix**: Resolved exception leakage issues during coverage parsing.
+- **Chore**: Upgraded minimum Dart SDK to `3.5.0` and unified development workflows via Melos scripts.
 
 ## 0.2.0
 
@@ -49,3 +26,28 @@
     - Fixed exception leakage in CLI Runner.
 - Documentation:
     - Added `AGENTS.md` guide for AI agents and developers.
+
+## 0.1.0
+
+- Refactored architecture to introduce `CoverageService` for better testability and programatic usage.
+- Added `CheckCoverageCommand` support for programatic usage.
+- Upgraded dependencies to support latest Dart versions.
+- Added full example package in `example/`.
+- Updated development dependencies.
+
+## 0.0.4
+
+- Flag `--excluded-paths` was added in order to exclude folders/files from coverage 
+
+## 0.0.3
+
+- Fixed an issue with the final coverage percentage calculation
+
+## 0.0.2
+
+- Flag `--version` was added in order to show the current version
+- Flag `--display-files` was added in order to show/hide coverage files 
+
+## 0.0.1
+
+- Initial version.
