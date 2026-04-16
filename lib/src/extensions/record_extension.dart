@@ -24,7 +24,8 @@ extension RecordExtension on Record {
     // Optimization: Use a fast-path for 100% coverage by using the `green100`
     // constant (a pre-interpolated string from `DoubleExtension`), which
     // eliminates redundant string allocations and interpolations.
-    final formattedPercentage = percentage == 100 ? green100 : '$color$percentage%';
+    final formattedPercentage =
+        percentage == 100 ? green100 : '$color$percentage%';
 
     final fileName = file ?? 'null';
     // Optimization: check for control characters before using `replaceAll`
