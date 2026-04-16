@@ -7,6 +7,7 @@ final _ansiAndControlRegExp = RegExp(
 
 extension RecordExtension on Record {
   double get coveragePercentage {
+    final lines = this.lines;
     final linesHit = lines?.hit ?? 0;
     final linesFound = lines?.found ?? 0;
     if (linesFound == 0) return 0;
@@ -18,6 +19,14 @@ extension RecordExtension on Record {
   List<Object> toRow() {
     final percentage = coveragePercentage;
     final color = percentage.getCoverageColorAnsi();
+    final lines = this.lines;
+
+    // Optimization: Use a fast-path for 100% coverage by using the `green100`
+    // constant (a pre-interpolated string from `DoubleExtension`), which
+    // eliminates redundant string allocations and interpolations.
+    final formattedPercentage =
+        percentage == 100 ? green100 : '$color$percentage%';
+
     final fileName = file ?? 'null';
     // Optimization: check for control characters before using `replaceAll`
     // to avoid regex overhead on clean strings (which is the common case).
@@ -28,7 +37,7 @@ extension RecordExtension on Record {
       '$color$sanitizedFile',
       '$color${lines?.found}',
       '$color${lines?.hit}',
-      '$color$percentage%',
+      formattedPercentage,
     ];
   }
 }
@@ -56,8 +65,9 @@ extension RecordListExtension on List<Record> {
     var linesFoundSum = 0;
     var linesHitSum = 0;
     for (final record in this) {
-      linesFoundSum += record.lines?.found ?? 0;
-      linesHitSum += record.lines?.hit ?? 0;
+      final lines = record.lines;
+      linesFoundSum += lines?.found ?? 0;
+      linesHitSum += lines?.hit ?? 0;
     }
     if (linesFoundSum == 0) return 0;
     final coveragePercentage = linesHitSum * 100 / linesFoundSum;

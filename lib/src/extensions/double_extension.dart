@@ -4,6 +4,8 @@ final greenColor = ConsoleColor.brightGreen.ansiSetForegroundColorSequence;
 final yellowColor = ConsoleColor.brightYellow.ansiSetForegroundColorSequence;
 final redColor = ConsoleColor.brightRed.ansiSetForegroundColorSequence;
 
+final green100 = '${greenColor}100.0%';
+
 extension DoubleExtension on double {
   String getCoverageColorAnsi() {
     return switch (this) {
