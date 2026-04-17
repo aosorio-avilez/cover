@@ -1,29 +1,46 @@
-import 'package:cover/src/extensions/double_extension.dart';
 import 'package:lcov_parser/lcov_parser.dart';
+import 'double_extension.dart';
 
 final _ansiAndControlRegExp = RegExp(
   r'\x1B\[[0-?]*[ -/]*[@-~]|[\x00-\x1F\x7F]',
 );
 
 extension RecordExtension on Record {
+  /// Returns the coverage percentage for the record, rounded to 2 decimal places.
   double get coveragePercentage {
-    final linesHit = lines?.hit ?? 0;
-    final linesFound = lines?.found ?? 0;
+    final currentLines = lines;
+    final linesHit = currentLines?.hit ?? 0;
+    final linesFound = currentLines?.found ?? 0;
     if (linesFound == 0) return 0;
-    final coveragePercentage = linesHit * 100 / linesFound;
+    final percentage = linesHit * 100 / linesFound;
     // Optimization: avoid string allocation and parsing for rounding.
-    return (coveragePercentage * 100).roundToDouble() / 100;
+    return (percentage * 100).roundToDouble() / 100;
   }
 
+  /// Returns a row for the coverage table.
   List<Object> toRow() {
     final percentage = coveragePercentage;
-    final color = percentage.getCoverageColorAnsi();
     final fileName = file ?? 'null';
+
     // Optimization: check for control characters before using `replaceAll`
     // to avoid regex overhead on clean strings (which is the common case).
     final sanitizedFile = _hasAnsiOrControlChars(fileName)
         ? fileName.replaceAll(_ansiAndControlRegExp, '')
         : fileName;
+
+    // Fast-path for 100% coverage which is a very common case.
+    // Uses pre-resolved `green100` from DoubleExtension.
+    if (percentage == 100.0) {
+      return <Object>[
+        '$greenColor$sanitizedFile',
+        '$greenColor${lines?.found}',
+        '$greenColor${lines?.hit}',
+        green100,
+      ];
+    }
+
+    final color = percentage.getCoverageColorAnsi();
+
     return <Object>[
       '$color$sanitizedFile',
       '$color${lines?.found}',
