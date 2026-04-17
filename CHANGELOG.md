@@ -1,3 +1,7 @@
+## 0.4.0 (Unreleased)
+
+- **Feat**: Added `--json` (abbr `-j`) flag to `check` command for machine-readable coverage output.
+
 ## 0.3.0
 
 - **Feat**: Integrated **Melos** as a workspace manager using **Dart Workspaces**.

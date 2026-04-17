@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cover/src/commands/check_coverage_command.dart';
 import 'package:cover/src/cover_command_runner.dart';
 import 'package:cover/src/models/exit_code.dart';
@@ -115,6 +117,29 @@ void main() {
       verify(() => console.write(any())).called(1);
       verify(() => console.writeLine(any())).called(2);
       verify(() => console.resetColorAttributes()).called(1);
+    },
+  );
+
+  test(
+    'verify check coverage command return json with --json flag',
+    () async {
+      final exitCode = await runner.run([
+        'check',
+        '--path',
+        'test/stubs/lcov_complete.info',
+        '--json',
+      ]);
+
+      expect(exitCode, ExitCode.success.code);
+      final captured = verify(() => console.writeLine(captureAny())).captured;
+      final jsonOutput = captured.first as String;
+      final decoded = jsonDecode(jsonOutput) as Map<String, dynamic>;
+
+      expect(decoded['coverage'], 100.0);
+      expect(decoded['files'], isA<List<dynamic>>());
+      expect((decoded['files'] as List<dynamic>).length, 17);
+      verifyNever(() => console.write(any()));
+      verifyNever(() => console.resetColorAttributes());
     },
   );
 }

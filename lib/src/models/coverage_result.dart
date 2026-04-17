@@ -1,3 +1,4 @@
+import 'package:cover/src/extensions/record_extension.dart';
 import 'package:lcov_parser/lcov_parser.dart';
 
 class CoverageResult {
@@ -5,4 +6,11 @@ class CoverageResult {
 
   final double coverage;
   final List<Record> files;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'coverage': coverage,
+      'files': files.map((file) => file.toJson()).toList(),
+    };
+  }
 }

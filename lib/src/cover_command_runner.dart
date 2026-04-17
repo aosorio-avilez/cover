@@ -15,6 +15,8 @@ const executableName = 'cover';
 const description = 'The easy way to check code coverage';
 const versionFlag = 'version';
 const versionDescription = 'Print the current version.';
+const jsonFlag = 'json';
+const jsonDescription = 'Output the result in JSON format.';
 
 class CoverCommandRunner extends CompletionCommandRunner<int> {
   CoverCommandRunner({Console? console, CoverageService? service})
@@ -27,6 +29,12 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
         abbr: 'v',
         negatable: false,
         help: versionDescription,
+      )
+      ..addFlag(
+        jsonFlag,
+        abbr: 'j',
+        negatable: false,
+        help: jsonDescription,
       )
       ..addFlag(
         displayFilesArgumentName,

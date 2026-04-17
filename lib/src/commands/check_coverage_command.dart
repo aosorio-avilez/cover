@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:args/command_runner.dart';
+import 'package:cover/src/cover_command_runner.dart';
 import 'package:cover/src/extensions/double_extension.dart';
 import 'package:cover/src/extensions/record_extension.dart';
 import 'package:cover/src/models/exit_code.dart';
@@ -46,6 +48,7 @@ class CheckCoverageCommand extends Command<int> {
     final minCoverage = getMinCoverageArgument();
     final displayFiles = getDisplayFilesArgument();
     final excludePaths = getExcludePathsArgument();
+    final isJson = getJsonArgument();
 
     try {
       final result = await _service.checkCoverage(
@@ -54,22 +57,27 @@ class CheckCoverageCommand extends Command<int> {
         excludePaths: excludePaths,
       );
 
-      final table = buildCoverageFileTable();
       final currentCoverage = result.coverage;
-      final color = currentCoverage.getCoverageColorAnsi();
 
-      if (displayFiles) {
-        for (final record in result.files) {
-          table.insertRow(record.toRow());
+      if (isJson) {
+        console.writeLine(jsonEncode(result.toJson()));
+      } else {
+        final table = buildCoverageFileTable();
+        final color = currentCoverage.getCoverageColorAnsi();
+
+        if (displayFiles) {
+          for (final record in result.files) {
+            table.insertRow(record.toRow());
+          }
+
+          console.write(table);
         }
 
-        console.write(table);
+        console
+          ..writeLine('Minimun coverage: $greenColor$minCoverage%')
+          ..resetColorAttributes()
+          ..writeLine('Current coverage: $color$currentCoverage%');
       }
-
-      console
-        ..writeLine('Minimun coverage: $greenColor$minCoverage%')
-        ..resetColorAttributes()
-        ..writeLine('Current coverage: $color$currentCoverage%');
 
       return currentCoverage >= minCoverage
           ? ExitCode.success.code
@@ -132,5 +140,9 @@ class CheckCoverageCommand extends Command<int> {
     }
 
     return excludePathsString.split(',').map((e) => e.trim()).toList();
+  }
+
+  bool getJsonArgument() {
+    return globalResults?[jsonFlag] as bool? ?? false;
   }
 }
