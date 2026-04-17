@@ -64,10 +64,13 @@ extension RecordListExtension on List<Record> {
   double getCodeCoverageResult() {
     var linesFoundSum = 0;
     var linesHitSum = 0;
-    for (final record in this) {
-      final lines = record.lines;
-      linesFoundSum += lines?.found ?? 0;
-      linesHitSum += lines?.hit ?? 0;
+    final len = length;
+    for (var i = 0; i < len; i++) {
+      final lines = this[i].lines;
+      if (lines != null) {
+        linesFoundSum += lines.found ?? 0;
+        linesHitSum += lines.hit ?? 0;
+      }
     }
     if (linesFoundSum == 0) return 0;
     final coveragePercentage = linesHitSum * 100 / linesFoundSum;
