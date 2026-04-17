@@ -60,7 +60,13 @@ class CheckCoverageCommand extends Command<int> {
       final currentCoverage = result.coverage;
 
       if (isJson) {
-        console.writeLine(jsonEncode(result.toJson()));
+        final jsonOutput = const JsonEncoder.withIndent('  ').convert(
+          result.toJson(
+            minCoverage: minCoverage,
+            excludePaths: excludePaths,
+          ),
+        );
+        console.writeLine(jsonOutput);
       } else {
         final table = buildCoverageFileTable();
         final color = currentCoverage.getCoverageColorAnsi();

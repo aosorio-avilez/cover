@@ -136,8 +136,20 @@ void main() {
       final decoded = jsonDecode(jsonOutput) as Map<String, dynamic>;
 
       expect(decoded['coverage'], 100.0);
+      expect(decoded['min_coverage'], 100.0);
+      expect(decoded['passed'], isTrue);
+      expect(decoded['timestamp'], isA<String>());
+      expect(decoded['files_count'], 17);
       expect(decoded['files'], isA<List<dynamic>>());
       expect((decoded['files'] as List<dynamic>).length, 17);
+
+      final firstFile =
+          (decoded['files'] as List<dynamic>).first as Map<String, dynamic>;
+      expect(firstFile['file'], isA<String>());
+      expect(firstFile['coverage'], isA<num>());
+      expect(firstFile['lines_found'], isA<int>());
+      expect(firstFile['lines_hit'], isA<int>());
+
       verifyNever(() => console.write(any()));
       verifyNever(() => console.resetColorAttributes());
     },

@@ -20,8 +20,8 @@ extension RecordExtension on Record {
     return {
       'file': file,
       'coverage': coveragePercentage,
-      'found_lines': lines?.found ?? 0,
-      'hit_lines': lines?.hit ?? 0,
+      'lines_found': lines?.found ?? 0,
+      'lines_hit': lines?.hit ?? 0,
     };
   }
 
