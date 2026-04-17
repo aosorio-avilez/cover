@@ -1,3 +1,8 @@
+## 0.4.0
+
+- **Feat**: Added `--json` (or `-j`) flag to `check` command to output coverage results in machine-readable JSON format.
+- **Feat**: Enhanced models with `toJson()` support for better integration with automation tools.
+
 ## 0.3.0
 
 - **Feat**: Integrated **Melos** as a workspace manager using **Dart Workspaces**.
