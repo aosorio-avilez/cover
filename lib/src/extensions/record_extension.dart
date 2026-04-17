@@ -16,6 +16,15 @@ extension RecordExtension on Record {
     return (coveragePercentage * 100).roundToDouble() / 100;
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'file': file,
+      'coverage': coveragePercentage,
+      'lines_found': lines?.found ?? 0,
+      'lines_hit': lines?.hit ?? 0,
+    };
+  }
+
   List<Object> toRow() {
     final percentage = coveragePercentage;
     final color = percentage.getCoverageColorAnsi();
