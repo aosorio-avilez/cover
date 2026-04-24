@@ -64,7 +64,11 @@ class CoverageService {
     List<Record> files;
     try {
       files = await Parser.parse(filePath);
-    } catch (e) {
+    } on RangeError catch (e) {
+      // ignore: avoid_catching_errors
+      throw FormatException('Failed to parse coverage file: $e');
+    } on StateError catch (e) {
+      // ignore: avoid_catching_errors
       throw FormatException('Failed to parse coverage file: $e');
     }
 

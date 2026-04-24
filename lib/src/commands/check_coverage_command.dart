@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:cover/src/cover_command_runner.dart';
@@ -88,11 +89,25 @@ class CheckCoverageCommand extends Command<int> {
       return currentCoverage >= minCoverage
           ? ExitCode.success.code
           : ExitCode.fail.code;
+    } on PathNotFoundException catch (e) {
+      _printError(e.osError?.message ?? e.message);
+      return ExitCode.osFile.code;
+    } on FileSystemException catch (e) {
+      _printError(e.message);
+      return ExitCode.osFile.code;
     } on FormatException catch (e) {
-      throw FormatException(e.message);
+      _printError(e.message);
+      return ExitCode.usage.code;
     } catch (e) {
       rethrow;
     }
+  }
+
+  void _printError(String message) {
+    console
+      ..writeErrorLine(message)
+      ..writeLine()
+      ..writeLine(usage);
   }
 
   Table buildCoverageFileTable() {
