@@ -19,7 +19,12 @@ const minCoverageHelp = 'Enforce a minimum coverage percentage.';
 
 const displayFilesArgumentName = 'display-files';
 const defaultDisplayFiles = true;
-const displayFilesHelp = 'Print corevage files';
+const displayFilesHelp = 'Print coverage files';
+
+const excludeGeneratedArgumentName = 'exclude-generated';
+const defaultExcludeGenerated = false;
+const excludeGeneratedHelp =
+    'Exclude common generated files (e.g., .g.dart, .freezed.dart)';
 
 const excludePathsArgumentName = 'excluded-paths';
 const defaultExcludePaths = '';
@@ -48,12 +53,14 @@ class CheckCoverageCommand extends Command<int> {
     final minCoverage = getMinCoverageArgument();
     final displayFiles = getDisplayFilesArgument();
     final excludePaths = getExcludePathsArgument();
+    final excludeGenerated = getExcludeGeneratedArgument();
     final isJson = getJsonArgument();
 
     final result = await _service.checkCoverage(
       filePath: filePath,
       minCoverage: minCoverage,
       excludePaths: excludePaths,
+      excludeGenerated: excludeGenerated,
     );
 
     final currentCoverage = result.coverage;
@@ -63,6 +70,7 @@ class CheckCoverageCommand extends Command<int> {
         result.toJson(
           minCoverage: minCoverage,
           excludePaths: excludePaths,
+          excludeGenerated: excludeGenerated,
         ),
       );
       console.writeLine(jsonOutput);
@@ -140,6 +148,11 @@ class CheckCoverageCommand extends Command<int> {
     }
 
     return excludePathsString.split(',').map((e) => e.trim()).toList();
+  }
+
+  bool getExcludeGeneratedArgument() {
+    return globalResults?[excludeGeneratedArgumentName] as bool? ??
+        defaultExcludeGenerated;
   }
 
   bool getJsonArgument() {

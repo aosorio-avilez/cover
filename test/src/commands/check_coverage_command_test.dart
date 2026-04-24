@@ -13,6 +13,10 @@ void main() {
   late Console console;
   late CoverCommandRunner runner;
 
+  setUpAll(() {
+    registerFallbackValue(TextAlignment.left);
+  });
+
   setUp(() {
     console = ConsoleMock();
     runner = CoverCommandRunner(console: console);
@@ -33,7 +37,7 @@ void main() {
 
     expect(exitCode, ExitCode.success.code);
     verify(() => console.write(any())).called(1);
-    verify(() => console.writeLine(any())).called(2);
+    verify(() => console.writeLine(any(), any())).called(2);
     verify(() => console.resetColorAttributes()).called(1);
   });
 
@@ -46,7 +50,7 @@ void main() {
 
     expect(exitCode, ExitCode.fail.code);
     verify(() => console.write(any())).called(1);
-    verify(() => console.writeLine(any())).called(2);
+    verify(() => console.writeLine(any(), any())).called(2);
     verify(() => console.resetColorAttributes()).called(1);
   });
 
@@ -97,7 +101,7 @@ void main() {
 
       expect(exitCode, ExitCode.success.code);
       verifyNever(() => console.write(any()));
-      verify(() => console.writeLine(any())).called(2);
+      verify(() => console.writeLine(any(), any())).called(2);
       verify(() => console.resetColorAttributes()).called(1);
     },
   );
@@ -115,7 +119,7 @@ void main() {
 
       expect(exitCode, ExitCode.success.code);
       verify(() => console.write(any())).called(1);
-      verify(() => console.writeLine(any())).called(2);
+      verify(() => console.writeLine(any(), any())).called(2);
       verify(() => console.resetColorAttributes()).called(1);
     },
   );
@@ -131,7 +135,7 @@ void main() {
       ]);
 
       expect(exitCode, ExitCode.success.code);
-      final captured = verify(() => console.writeLine(captureAny())).captured;
+      final captured = verify(() => console.writeLine(captureAny(), any())).captured;
       final jsonOutput = captured.first as String;
       final decoded = jsonDecode(jsonOutput) as Map<String, dynamic>;
 
@@ -150,6 +154,47 @@ void main() {
       expect(firstFile['lines_found'], isA<int>());
       expect(firstFile['lines_hit'], isA<int>());
 
+      verifyNever(() => console.write(any()));
+      verifyNever(() => console.resetColorAttributes());
+    },
+  );
+
+  test(
+    'verify check coverage command exclude generated files with --exclude-generated flag',
+    () async {
+      final exitCode = await runner.run([
+        'check',
+        '--path',
+        'test/stubs/lcov_with_generated.info',
+        '--exclude-generated',
+        '--min-coverage',
+        '100',
+      ]);
+
+      expect(exitCode, ExitCode.success.code);
+      verify(() => console.write(any())).called(1);
+      verify(() => console.writeLine(any(), any())).called(2);
+      verify(() => console.resetColorAttributes()).called(1);
+    },
+  );
+
+  test(
+    'verify check coverage command JSON includes exclude_generated state',
+    () async {
+      final exitCode = await runner.run([
+        'check',
+        '--path',
+        'test/stubs/lcov_complete.info',
+        '--json',
+        '--exclude-generated',
+      ]);
+
+      expect(exitCode, ExitCode.success.code);
+      final captured = verify(() => console.writeLine(captureAny(), any())).captured;
+      final jsonOutput = captured.first as String;
+      final decoded = jsonDecode(jsonOutput) as Map<String, dynamic>;
+
+      expect(decoded['exclude_generated'], isTrue);
       verifyNever(() => console.write(any()));
       verifyNever(() => console.resetColorAttributes());
     },

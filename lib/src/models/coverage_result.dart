@@ -10,6 +10,7 @@ class CoverageResult {
   Map<String, dynamic> toJson({
     required double minCoverage,
     List<String> excludePaths = const [],
+    bool excludeGenerated = false,
   }) {
     return {
       'coverage': coverage,
@@ -17,6 +18,7 @@ class CoverageResult {
       'passed': coverage >= minCoverage,
       'timestamp': DateTime.now().toIso8601String(),
       'files_count': files.length,
+      'exclude_generated': excludeGenerated,
       'excluded_paths': excludePaths,
       'files': files.map((file) => file.toJson()).toList(),
     };
