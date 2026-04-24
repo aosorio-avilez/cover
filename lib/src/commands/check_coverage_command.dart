@@ -68,10 +68,10 @@ class CheckCoverageCommand extends Command<int> {
         );
         console.writeLine(jsonOutput);
       } else {
-        final table = buildCoverageFileTable();
         final color = currentCoverage.getCoverageColorAnsi();
 
         if (displayFiles) {
+          final table = buildCoverageFileTable();
           for (final record in result.files) {
             table.insertRow(record.toRow());
           }
