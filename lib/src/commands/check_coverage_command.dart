@@ -50,49 +50,43 @@ class CheckCoverageCommand extends Command<int> {
     final excludePaths = getExcludePathsArgument();
     final isJson = getJsonArgument();
 
-    try {
-      final result = await _service.checkCoverage(
-        filePath: filePath,
-        minCoverage: minCoverage,
-        excludePaths: excludePaths,
+    final result = await _service.checkCoverage(
+      filePath: filePath,
+      minCoverage: minCoverage,
+      excludePaths: excludePaths,
+    );
+
+    final currentCoverage = result.coverage;
+
+    if (isJson) {
+      final jsonOutput = const JsonEncoder.withIndent('  ').convert(
+        result.toJson(
+          minCoverage: minCoverage,
+          excludePaths: excludePaths,
+        ),
       );
+      console.writeLine(jsonOutput);
+    } else {
+      final color = currentCoverage.getCoverageColorAnsi();
 
-      final currentCoverage = result.coverage;
-
-      if (isJson) {
-        final jsonOutput = const JsonEncoder.withIndent('  ').convert(
-          result.toJson(
-            minCoverage: minCoverage,
-            excludePaths: excludePaths,
-          ),
-        );
-        console.writeLine(jsonOutput);
-      } else {
-        final color = currentCoverage.getCoverageColorAnsi();
-
-        if (displayFiles) {
-          final table = buildCoverageFileTable();
-          for (final record in result.files) {
-            table.insertRow(record.toRow());
-          }
-
-          console.write(table);
+      if (displayFiles) {
+        final table = buildCoverageFileTable();
+        for (final record in result.files) {
+          table.insertRow(record.toRow());
         }
 
-        console
-          ..writeLine('Minimun coverage: $greenColor$minCoverage%')
-          ..resetColorAttributes()
-          ..writeLine('Current coverage: $color$currentCoverage%');
+        console.write(table);
       }
 
-      return currentCoverage >= minCoverage
-          ? ExitCode.success.code
-          : ExitCode.fail.code;
-    } on FormatException catch (e) {
-      throw FormatException(e.message);
-    } catch (e) {
-      rethrow;
+      console
+        ..writeLine('Minimun coverage: $greenColor$minCoverage%')
+        ..resetColorAttributes()
+        ..writeLine('Current coverage: $color$currentCoverage%');
     }
+
+    return currentCoverage >= minCoverage
+        ? ExitCode.success.code
+        : ExitCode.fail.code;
   }
 
   Table buildCoverageFileTable() {
