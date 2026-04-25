@@ -94,6 +94,48 @@ void main() {
       expect(result.files.length, 17);
     });
 
+    test('checkCoverage excludes generated files when requested', () async {
+      final result = await service.checkCoverage(
+        filePath: 'test/stubs/lcov_with_generated.info',
+        minCoverage: 0,
+        excludeGenerated: true,
+      );
+
+      expect(result.files.length, 1);
+      expect(result.files.first.file, 'lib/src/models/user.dart');
+      expect(result.coverage, 100.0);
+    });
+
+    test('checkCoverage includes generated files when not requested', () async {
+      final result = await service.checkCoverage(
+        filePath: 'test/stubs/lcov_with_generated.info',
+        minCoverage: 0,
+      );
+
+      expect(result.files.length, 4);
+      expect(
+        result.coverage,
+        62.5,
+      ); // (2+1+1+1) / (2+2+2+2) * 100 = 5/8 * 100 = 62.5
+    });
+
+    test('checkCoverage handles both excluded paths and generated files',
+        () async {
+      final result = await service.checkCoverage(
+        filePath: 'test/stubs/lcov_with_generated.info',
+        minCoverage: 0,
+        excludePaths: ['models/user.dart'],
+        excludeGenerated: true,
+      );
+
+      // models/user.dart excluded by path
+      // models/user.g.dart excluded by generated
+      // models/user.freezed.dart excluded by generated
+      // services/api_service.mocks.dart excluded by generated
+      expect(result.files, isEmpty);
+      expect(result.coverage, 0.0);
+    });
+
     test('checkCoverage handles duplicate excluded paths correctly', () async {
       final result = await service.checkCoverage(
         filePath: 'test/stubs/lcov_uncovered.info',

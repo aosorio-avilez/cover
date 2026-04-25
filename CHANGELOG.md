@@ -1,5 +1,6 @@
 ## 0.4.0 (Unreleased)
 
+- **Feat**: Added `--exclude-generated` flag to `check` command to ignore common generated files (e.g., `.g.dart`, `.freezed.dart`, `.mocks.dart`).
 - **Feat**: Added `--json` (abbr `-j`) flag to `check` command for machine-readable coverage output.
 
 ## 0.3.0

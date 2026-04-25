@@ -59,6 +59,10 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
         defaultsTo: defaultExcludePaths,
         help: excludePathsHelp,
         abbr: 'e',
+      )
+      ..addFlag(
+        excludeGeneratedArgumentName,
+        help: excludeGeneratedHelp,
       );
 
     addCommand(CheckCoverageCommand(_console, service: coverageService));

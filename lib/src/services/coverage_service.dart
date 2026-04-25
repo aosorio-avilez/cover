@@ -16,6 +16,7 @@ class CoverageService {
     required String filePath,
     required double minCoverage,
     List<String> excludePaths = const [],
+    bool excludeGenerated = false,
   }) async {
     if (filePath.isEmpty) {
       throw const PathNotFoundException(
@@ -43,9 +44,13 @@ class CoverageService {
       );
     }
 
-    final files = await _parseCoverageFile(resolvedPath, excludePaths);
+    final files = await _parseCoverageFile(
+      resolvedPath,
+      excludePaths,
+      excludeGenerated: excludeGenerated,
+    );
 
-    if (files.isEmpty) {
+    if (files.isEmpty && !excludeGenerated && excludePaths.isEmpty) {
       throw const FormatException(
         'File is empty or does not have the correct format',
       );
@@ -58,8 +63,9 @@ class CoverageService {
 
   Future<List<Record>> _parseCoverageFile(
     String filePath,
-    List<String> excludedPaths,
-  ) async {
+    List<String> excludedPaths, {
+    bool excludeGenerated = false,
+  }) async {
     // Note: filePath is now expected to be a validated, absolute path.
     List<Record> files;
     try {
@@ -70,21 +76,24 @@ class CoverageService {
 
     // Optimization: Filter out empty strings to avoid matching all files and
     // ensure correctness.
-    if (excludedPaths.isEmpty) {
-      return files;
-    }
-
     final validExcludedPaths = excludedPaths.where((e) => e.isNotEmpty).toSet();
 
-    if (validExcludedPaths.isEmpty) {
+    if (validExcludedPaths.isEmpty && !excludeGenerated) {
       return files;
     }
 
     // Optimization: Using a single RegExp with alternation is significantly
     // faster than iterating through the list with String.contains for larger
     // sets of excluded paths.
-    final pattern = validExcludedPaths.map(RegExp.escape).join('|');
-    final regExp = RegExp(pattern);
+    final patterns = validExcludedPaths.map(RegExp.escape).toList();
+
+    if (excludeGenerated) {
+      patterns.add(
+        r'\.(g|freezed|mocks|template|reflectable|config|pigeon|gr|pb|graphql|mapper)\.dart$',
+      );
+    }
+
+    final regExp = RegExp(patterns.join('|'), caseSensitive: false);
 
     // Note: `files` is a fresh list from `Parser.parse`, so we can mutate it
     // safely.
