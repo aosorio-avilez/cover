@@ -88,10 +88,12 @@ class CoverageService {
     final List<String> patterns = validExcludedPaths.map(RegExp.escape).toList();
 
     if (excludeGenerated) {
-      patterns.add(r'\.(g|freezed|mocks|template|reflectable|config|pigeon)\.dart$');
+      patterns.add(
+        r'\.(g|freezed|mocks|template|reflectable|config|pigeon|gr|pb|graphql|mapper)\.dart$',
+      );
     }
 
-    final regExp = RegExp(patterns.join('|'));
+    final regExp = RegExp(patterns.join('|'), caseSensitive: false);
 
     // Note: `files` is a fresh list from `Parser.parse`, so we can mutate it
     // safely.
