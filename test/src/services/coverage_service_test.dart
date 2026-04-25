@@ -110,14 +110,17 @@ void main() {
       final result = await service.checkCoverage(
         filePath: 'test/stubs/lcov_with_generated.info',
         minCoverage: 0,
-        excludeGenerated: false,
       );
 
       expect(result.files.length, 4);
-      expect(result.coverage, 62.5); // (2+1+1+1) / (2+2+2+2) * 100 = 5/8 * 100 = 62.5
+      expect(
+        result.coverage,
+        62.5,
+      ); // (2+1+1+1) / (2+2+2+2) * 100 = 5/8 * 100 = 62.5
     });
 
-    test('checkCoverage handles both excluded paths and generated files', () async {
+    test('checkCoverage handles both excluded paths and generated files',
+        () async {
       final result = await service.checkCoverage(
         filePath: 'test/stubs/lcov_with_generated.info',
         minCoverage: 0,

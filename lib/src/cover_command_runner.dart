@@ -62,7 +62,6 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
       )
       ..addFlag(
         excludeGeneratedArgumentName,
-        defaultsTo: defaultExcludeGenerated,
         help: excludeGeneratedHelp,
       );
 

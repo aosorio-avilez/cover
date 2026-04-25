@@ -135,7 +135,8 @@ void main() {
       ]);
 
       expect(exitCode, ExitCode.success.code);
-      final captured = verify(() => console.writeLine(captureAny(), any())).captured;
+      final captured =
+          verify(() => console.writeLine(captureAny(), any())).captured;
       final jsonOutput = captured.first as String;
       final decoded = jsonDecode(jsonOutput) as Map<String, dynamic>;
 
@@ -190,7 +191,8 @@ void main() {
       ]);
 
       expect(exitCode, ExitCode.success.code);
-      final captured = verify(() => console.writeLine(captureAny(), any())).captured;
+      final captured =
+          verify(() => console.writeLine(captureAny(), any())).captured;
       final jsonOutput = captured.first as String;
       final decoded = jsonDecode(jsonOutput) as Map<String, dynamic>;
 

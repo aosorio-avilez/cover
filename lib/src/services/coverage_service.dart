@@ -85,7 +85,7 @@ class CoverageService {
     // Optimization: Using a single RegExp with alternation is significantly
     // faster than iterating through the list with String.contains for larger
     // sets of excluded paths.
-    final List<String> patterns = validExcludedPaths.map(RegExp.escape).toList();
+    final patterns = validExcludedPaths.map(RegExp.escape).toList();
 
     if (excludeGenerated) {
       patterns.add(
