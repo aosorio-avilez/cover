@@ -6,6 +6,36 @@ final _ansiAndControlRegExp = RegExp(
 );
 
 extension RecordExtension on Record {
+  List<int> get uncoveredLines {
+    final details = lines?.details;
+    if (details == null) return [];
+    return details
+        .where((detail) => (detail.hit ?? 0) == 0)
+        .map((detail) => detail.line ?? 0)
+        .where((line) => line != 0)
+        .toList();
+  }
+
+  String _formatUncoveredLines(List<int> lines) {
+    if (lines.isEmpty) return '';
+    lines.sort();
+    final ranges = <String>[];
+    var start = lines[0];
+    var end = lines[0];
+
+    for (var i = 1; i < lines.length; i++) {
+      if (lines[i] == end + 1) {
+        end = lines[i];
+      } else {
+        ranges.add(start == end ? '$start' : '$start-$end');
+        start = lines[i];
+        end = lines[i];
+      }
+    }
+    ranges.add(start == end ? '$start' : '$start-$end');
+    return ranges.join(', ');
+  }
+
   double get coveragePercentage {
     final lines = this.lines;
     final linesHit = lines?.hit ?? 0;
@@ -22,10 +52,11 @@ extension RecordExtension on Record {
       'coverage': coveragePercentage,
       'lines_found': lines?.found ?? 0,
       'lines_hit': lines?.hit ?? 0,
+      'uncovered_lines': uncoveredLines,
     };
   }
 
-  List<Object> toRow() {
+  List<Object> toRow({bool showUncovered = false}) {
     final percentage = coveragePercentage;
     final color = percentage.getCoverageColorAnsi();
     final lines = this.lines;
@@ -42,12 +73,19 @@ extension RecordExtension on Record {
     final sanitizedFile = _hasAnsiOrControlChars(fileName)
         ? fileName.replaceAll(_ansiAndControlRegExp, '')
         : fileName;
-    return <Object>[
+
+    final row = <Object>[
       '$color$sanitizedFile',
       '$color${lines?.found}',
       '$color${lines?.hit}',
       formattedPercentage,
     ];
+
+    if (showUncovered) {
+      row.add('$color${_formatUncoveredLines(uncoveredLines)}');
+    }
+
+    return row;
   }
 }
 
