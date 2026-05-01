@@ -31,6 +31,10 @@ const defaultExcludePaths = '';
 const excludePathsHelp =
     'Specify paths separate by comma to exclude from coverage';
 
+const showUncoveredArgumentName = 'show-uncovered';
+const defaultShowUncovered = false;
+const showUncoveredHelp = 'Display uncovered line numbers';
+
 const commandDescription = 'Check code coverage';
 const commandName = 'check';
 
@@ -55,6 +59,7 @@ class CheckCoverageCommand extends Command<int> {
     final excludePaths = getExcludePathsArgument();
     final excludeGenerated = getExcludeGeneratedArgument();
     final isJson = getJsonArgument();
+    final showUncovered = getShowUncoveredArgument();
 
     final result = await _service.checkCoverage(
       filePath: filePath,
@@ -78,9 +83,9 @@ class CheckCoverageCommand extends Command<int> {
       final color = currentCoverage.getCoverageColorAnsi();
 
       if (displayFiles) {
-        final table = buildCoverageFileTable();
+        final table = buildCoverageFileTable(showUncovered: showUncovered);
         for (final record in result.files) {
-          table.insertRow(record.toRow());
+          table.insertRow(record.toRow(showUncovered: showUncovered));
         }
 
         console.write(table);
@@ -97,13 +102,21 @@ class CheckCoverageCommand extends Command<int> {
         : ExitCode.fail.code;
   }
 
-  Table buildCoverageFileTable() {
-    return Table()
+  Table buildCoverageFileTable({bool showUncovered = false}) {
+    final table = Table()
       ..insertColumn(header: 'File name')
       ..insertColumn(header: 'Found Lines', alignment: TextAlignment.center)
       ..insertColumn(header: 'Hit Lines', alignment: TextAlignment.center)
-      ..insertColumn(header: 'Coverage', alignment: TextAlignment.center)
-      ..borderColor = ConsoleColor.black;
+      ..insertColumn(header: 'Coverage', alignment: TextAlignment.center);
+
+    if (showUncovered) {
+      table.insertColumn(
+        header: 'Uncovered Lines',
+        alignment: TextAlignment.center,
+      );
+    }
+
+    return table..borderColor = ConsoleColor.black;
   }
 
   double getMinCoverageArgument() {
@@ -157,5 +170,10 @@ class CheckCoverageCommand extends Command<int> {
 
   bool getJsonArgument() {
     return globalResults?[jsonFlag] as bool? ?? false;
+  }
+
+  bool getShowUncoveredArgument() {
+    return globalResults?[showUncoveredArgumentName] as bool? ??
+        defaultShowUncovered;
   }
 }

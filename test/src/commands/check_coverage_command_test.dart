@@ -201,4 +201,51 @@ void main() {
       verifyNever(() => console.resetColorAttributes());
     },
   );
+
+  test(
+    'verify check coverage command shows uncovered lines with --show-uncovered flag',
+    () async {
+      final exitCode = await runner.run([
+        'check',
+        '--path',
+        'test/stubs/lcov_incomplete.info',
+        '--show-uncovered',
+      ]);
+
+      expect(exitCode, ExitCode.fail.code);
+      final captured = verify(() => console.write(captureAny())).captured;
+      final table = captured.first as Table;
+      expect(table.columns, 5);
+
+      verify(() => console.writeLine(any(), any())).called(2);
+      verify(() => console.resetColorAttributes()).called(1);
+    },
+  );
+
+  test(
+    'verify check coverage command JSON includes uncovered_lines in files',
+    () async {
+      final exitCode = await runner.run([
+        'check',
+        '--path',
+        'test/stubs/lcov_incomplete.info',
+        '--json',
+      ]);
+
+      expect(exitCode, ExitCode.fail.code);
+      final captured =
+          verify(() => console.writeLine(captureAny(), any())).captured;
+      final jsonOutput = captured.first as String;
+      final decoded = jsonDecode(jsonOutput) as Map<String, dynamic>;
+
+      final files = decoded['files'] as List<dynamic>;
+      final apiFile = files.firstWhere(
+        (f) => f['file'] == 'lib/src/api/auth_api_impl.dart',
+      ) as Map<String, dynamic>;
+
+      expect(apiFile['uncovered_lines'], containsAll([20, 22]));
+      verifyNever(() => console.write(any()));
+      verifyNever(() => console.resetColorAttributes());
+    },
+  );
 }
