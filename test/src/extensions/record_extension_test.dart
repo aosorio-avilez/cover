@@ -71,6 +71,56 @@ void main() {
 
       await file.delete();
     });
+
+    test('uncoveredLines returns correct line numbers', () async {
+      final file = File('test_uncovered.info');
+      await file.writeAsString(
+        'SF:test.dart\nDA:1,1\nDA:2,0\nDA:3,1\nDA:4,0\nLF:4\nLH:2\nend_of_record',
+      );
+
+      final records = await Parser.parse(file.path);
+      final record = records.first;
+
+      expect(record.uncoveredLines, [2, 4]);
+
+      await file.delete();
+    });
+
+    test('toRow includes uncovered lines when requested', () async {
+      final file = File('test_uncovered_row.info');
+      await file.writeAsString(
+        'SF:test.dart\nDA:1,0\nDA:2,0\nDA:3,0\nDA:5,0\nLF:4\nLH:0\nend_of_record',
+      );
+
+      final records = await Parser.parse(file.path);
+      final record = records.first;
+
+      // Without showUncovered
+      final rowDefault = record.toRow();
+      expect(rowDefault.length, 4);
+
+      // With showUncovered
+      final rowWithUncovered = record.toRow(showUncovered: true);
+      expect(rowWithUncovered.length, 5);
+      expect(rowWithUncovered[4].toString(), contains('1-3, 5'));
+
+      await file.delete();
+    });
+
+    test('toJson includes uncovered lines', () async {
+      final file = File('test_uncovered_json.info');
+      await file.writeAsString(
+        'SF:test.dart\nDA:1,0\nDA:2,1\nLF:2\nLH:1\nend_of_record',
+      );
+
+      final records = await Parser.parse(file.path);
+      final record = records.first;
+      final json = record.toJson();
+
+      expect(json['uncovered_lines'], [1]);
+
+      await file.delete();
+    });
   });
 
   group('RecordListExtension', () {
