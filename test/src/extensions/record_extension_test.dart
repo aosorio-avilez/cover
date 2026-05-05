@@ -112,7 +112,8 @@ void main() {
       await file.delete();
     });
 
-    test('toRow handles showUncovered when there are no uncovered lines', () async {
+    test('toRow handles showUncovered when there are no uncovered lines',
+        () async {
       final file = File('test_no_uncovered_row.info');
       await file.writeAsString(
         'SF:test.dart\nDA:1,1\nDA:2,1\nLF:2\nLH:2\nend_of_record',
