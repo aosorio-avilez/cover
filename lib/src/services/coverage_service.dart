@@ -9,6 +9,14 @@ class CoverageService {
   CoverageService({Directory? currentDirectory})
       : _currentDirectory = currentDirectory ?? Directory.current;
 
+  static const _generatedPattern =
+      r'\.(g|freezed|mocks|template|reflectable|config|pigeon|gr|pb|graphql|mapper)\.dart$';
+
+  static final _generatedRegExp = RegExp(
+    _generatedPattern,
+    caseSensitive: false,
+  );
+
   final Directory _currentDirectory;
   Future<String>? _resolvedCurrentDirectoryPath;
 
@@ -82,18 +90,22 @@ class CoverageService {
       return files;
     }
 
-    // Optimization: Using a single RegExp with alternation is significantly
-    // faster than iterating through the list with String.contains for larger
-    // sets of excluded paths.
-    final patterns = validExcludedPaths.map(RegExp.escape).toList();
+    RegExp regExp;
 
-    if (excludeGenerated) {
-      patterns.add(
-        r'\.(g|freezed|mocks|template|reflectable|config|pigeon|gr|pb|graphql|mapper)\.dart$',
-      );
+    if (validExcludedPaths.isEmpty && excludeGenerated) {
+      regExp = _generatedRegExp;
+    } else {
+      // Optimization: Using a single RegExp with alternation is significantly
+      // faster than iterating through the list with String.contains for larger
+      // sets of excluded paths.
+      final patterns = validExcludedPaths.map(RegExp.escape).toList();
+
+      if (excludeGenerated) {
+        patterns.add(_generatedPattern);
+      }
+
+      regExp = RegExp(patterns.join('|'), caseSensitive: false);
     }
-
-    final regExp = RegExp(patterns.join('|'), caseSensitive: false);
 
     // Note: `files` is a fresh list from `Parser.parse`, so we can mutate it
     // safely.
