@@ -72,6 +72,11 @@ void main() {
       await file.delete();
     });
 
+    test('uncoveredLines returns empty list if details are null', () {
+      final record = Record();
+      expect(record.uncoveredLines, isEmpty);
+    });
+
     test('uncoveredLines returns correct line numbers', () async {
       final file = File('test_uncovered.info');
       await file.writeAsString(
@@ -103,6 +108,30 @@ void main() {
       final rowWithUncovered = record.toRow(showUncovered: true);
       expect(rowWithUncovered.length, 5);
       expect(rowWithUncovered[4].toString(), contains('1-3, 5'));
+
+      await file.delete();
+    });
+
+    test('toRow handles showUncovered when there are no uncovered lines', () async {
+      final file = File('test_no_uncovered_row.info');
+      await file.writeAsString(
+        'SF:test.dart\nDA:1,1\nDA:2,1\nLF:2\nLH:2\nend_of_record',
+      );
+
+      final records = await Parser.parse(file.path);
+      final record = records.first;
+
+      expect(record.uncoveredLines, isEmpty);
+
+      final rowWithUncovered = record.toRow(showUncovered: true);
+      expect(rowWithUncovered.length, 5);
+      expect(
+        rowWithUncovered[4].toString().replaceAll(
+              RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]'),
+              '',
+            ),
+        isEmpty,
+      );
 
       await file.delete();
     });
