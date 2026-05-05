@@ -1,14 +1,7 @@
-## 0.4.0
+## 0.4.0 (Unreleased)
 
-- **Feat**: Added `--show-uncovered` flag to display missing coverage line numbers.
 - **Feat**: Added `--exclude-generated` flag to `check` command to ignore common generated files (e.g., `.g.dart`, `.freezed.dart`, `.mocks.dart`).
 - **Feat**: Added `--json` (abbr `-j`) flag to `check` command for machine-readable coverage output.
-- **Feat**: Added automated Pull Request reviewer workflow for AI agents.
-- **Perf**: Pre-compiled generated files regex for faster parsing.
-- **Perf**: Deferred table allocation in check coverage command.
-- **Perf**: Optimized coverage aggregation with indexed loop.
-- **Perf**: Optimized `Record` extension `toRow` with fast-path for 100% coverage.
-- **Refactor**: Consolidated agent guidelines and removed legacy `AGENTS.md`.
 
 ## 0.3.0
 
