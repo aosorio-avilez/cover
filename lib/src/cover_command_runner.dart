@@ -68,7 +68,6 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
         showUncoveredArgumentName,
         abbr: 'u',
         help: showUncoveredHelp,
-        defaultsTo: defaultShowUncovered,
       );
 
     addCommand(CheckCoverageCommand(_console, service: coverageService));
