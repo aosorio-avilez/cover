@@ -238,10 +238,10 @@ void main() {
       final jsonOutput = captured.first as String;
       final decoded = jsonDecode(jsonOutput) as Map<String, dynamic>;
 
-      final files = decoded['files'] as List<dynamic>;
+      final files = List<Map<String, dynamic>>.from(decoded['files'] as List);
       final apiFile = files.firstWhere(
         (f) => f['file'] == 'lib/src/api/auth_api_impl.dart',
-      ) as Map<String, dynamic>;
+      );
 
       expect(apiFile['uncovered_lines'], containsAll([20, 22]));
       verifyNever(() => console.write(any()));
