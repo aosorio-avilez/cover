@@ -9,6 +9,9 @@
 - **Perf**: Optimized coverage aggregation with indexed loop.
 - **Perf**: Optimized `Record` extension `toRow` with fast-path for 100% coverage.
 - **Refactor**: Consolidated agent guidelines and removed legacy `AGENTS.md`.
+- **Fix**: Enhanced `CheckCoverageCommand` with robust error handling and structured JSON error reporting for failure scenarios.
+- **Refactor**: Optimized `CoverCommandRunner.getVersion` using non-blocking I/O to prevent event loop blockage and TOCTOU.
+- **Chore**: Improved repository hygiene by excluding IDE-specific artifacts in `.gitignore`.
 
 ## 0.3.0
 

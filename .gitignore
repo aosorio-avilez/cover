@@ -16,3 +16,7 @@ coverage/
 
 # Dart SDK
 dart-sdk/
+
+# IDEs
+.idea/
+*.iml

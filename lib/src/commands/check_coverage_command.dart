@@ -1,13 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:cover/src/cover_command_runner.dart';
 import 'package:cover/src/extensions/double_extension.dart';
 import 'package:cover/src/extensions/record_extension.dart';
+import 'package:cover/src/models/coverage_result.dart';
 import 'package:cover/src/models/exit_code.dart';
 import 'package:cover/src/services/coverage_service.dart';
 import 'package:dart_console/dart_console.dart';
+import 'package:cover/src/extensions/string_extension.dart';
+import 'package:lcov_parser/lcov_parser.dart';
 
 const filePathArgumentName = 'path';
 const defaultFilePath = 'coverage/lcov.info';
@@ -61,13 +65,57 @@ class CheckCoverageCommand extends Command<int> {
     final isJson = getJsonArgument();
     final showUncovered = getShowUncoveredArgument();
 
-    final result = await _service.checkCoverage(
-      filePath: filePath,
-      minCoverage: minCoverage,
-      excludePaths: excludePaths,
-      excludeGenerated: excludeGenerated,
-    );
+    try {
+      final result = await _service.checkCoverage(
+        filePath: filePath,
+        minCoverage: minCoverage,
+        excludePaths: excludePaths,
+        excludeGenerated: excludeGenerated,
+      );
 
+      _displayResult(
+        result,
+        isJson: isJson,
+        minCoverage: minCoverage,
+        excludePaths: excludePaths,
+        excludeGenerated: excludeGenerated,
+        displayFiles: displayFiles,
+        showUncovered: showUncovered,
+      );
+
+      return result.coverage >= minCoverage
+          ? ExitCode.success.code
+          : ExitCode.fail.code;
+    } on PathNotFoundException catch (e) {
+      return _handleError(
+        e.osError?.message ?? e.message,
+        isJson: isJson,
+        code: ExitCode.osFile,
+      );
+    } on FileSystemException catch (e) {
+      return _handleError(e.message, isJson: isJson, code: ExitCode.osFile);
+    } on FileMustBeProvided catch (e) {
+      return _handleError(e.errMsg(), isJson: isJson, code: ExitCode.osFile);
+    } on FormatException catch (e) {
+      return _handleError(e.message, isJson: isJson, code: ExitCode.usage);
+    } catch (e) {
+      return _handleError(
+        'An unexpected error occurred: $e',
+        isJson: isJson,
+        code: ExitCode.software,
+      );
+    }
+  }
+
+  void _displayResult(
+    CoverageResult result, {
+    required bool isJson,
+    required double minCoverage,
+    required List<String> excludePaths,
+    required bool excludeGenerated,
+    required bool displayFiles,
+    required bool showUncovered,
+  }) {
     final currentCoverage = result.coverage;
 
     if (isJson) {
@@ -92,14 +140,32 @@ class CheckCoverageCommand extends Command<int> {
       }
 
       console
-        ..writeLine('Minimun coverage: $greenColor$minCoverage%')
+        ..writeLine('Minimum coverage: $greenColor$minCoverage%')
         ..resetColorAttributes()
         ..writeLine('Current coverage: $color$currentCoverage%');
     }
+  }
 
-    return currentCoverage >= minCoverage
-        ? ExitCode.success.code
-        : ExitCode.fail.code;
+  int _handleError(
+    String message, {
+    required bool isJson,
+    required ExitCode code,
+  }) {
+    final sanitizedMessage = message.sanitize();
+    if (isJson) {
+      final errorJson = jsonEncode({
+        'error': sanitizedMessage,
+        'exit_code': code.code,
+        'status': code.name,
+      });
+      console.writeLine(errorJson);
+    } else {
+      console
+        ..writeErrorLine(sanitizedMessage)
+        ..writeLine()
+        ..writeLine(usage);
+    }
+    return code.code;
   }
 
   Table buildCoverageFileTable({bool showUncovered = false}) {
