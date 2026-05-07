@@ -42,14 +42,14 @@ melos:
       description: Run static analysis for all packages in parallel.
 
     test:
-      run: melos exec -- "dart test -j 8 --test-randomize-ordering-seed random"
-      description: Run unit tests for all packages in the workspace.
+      run: melos exec --dir-exists="test" -- "dart test -j 8 --test-randomize-ordering-seed random"
+      description: Run unit tests for all packages in the workspace that have a test directory.
 
     coverage:
       run: |
-        melos exec -- "dart test -j 8 --test-randomize-ordering-seed random --coverage=coverage"
+        melos exec --scope="cover" -- "dart test -j 8 --test-randomize-ordering-seed random --coverage=coverage"
         format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib
-      description: Run tests and generate LCOV report for the workspace.
+      description: Run tests and generate LCOV report for the main cover package.
 
     check-coverage:
       run: dart bin/cover.dart check -u
