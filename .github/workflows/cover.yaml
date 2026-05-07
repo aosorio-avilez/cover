@@ -11,12 +11,13 @@ jobs:
 
     steps: 
       - name: 📚 Git Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 🎯 Setup Dart
         uses: dart-lang/setup-dart@v1
         with:
           sdk: "stable"
+          cache: true
 
       - name: ⚙️ Install Tools
         run: ./.github/workflows/scripts/install-tools.sh
@@ -25,9 +26,9 @@ jobs:
         run: melos bootstrap
 
       - name: 🧪 Run Tests with Coverage
-        run: melos coverage
+        run: melos run coverage
       
       - name: 📊 Upload Code Coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

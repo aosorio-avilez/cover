@@ -9,17 +9,17 @@ jobs:
   semantic-pull-request:
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/semantic_pull_request.yml@v1
 
-  build:
+  analyze:
     runs-on: ubuntu-latest
-
     steps:
       - name: 📚 Git Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 🎯 Setup Dart
         uses: dart-lang/setup-dart@v1
         with:
           sdk: "stable"
+          cache: true
       
       - name: ⚙️ Install Tools
         run: ./.github/workflows/scripts/install-tools.sh
@@ -28,13 +28,31 @@ jobs:
         run: melos bootstrap
 
       - name: ✨ Check Formatting
-        run: melos format:check
+        run: melos run format:check
 
       - name: 🕵️ Analyze
-        run: melos analyze
+        run: melos run analyze
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📚 Git Checkout
+        uses: actions/checkout@v4
+
+      - name: 🎯 Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: "stable"
+          cache: true
+
+      - name: ⚙️ Install Tools
+        run: ./.github/workflows/scripts/install-tools.sh
+
+      - name: 📦 Install Dependencies
+        run: melos bootstrap
 
       - name: 🧪 Run Tests with Coverage
-        run: melos coverage
+        run: melos run coverage
 
       - name: 📊 Code Coverage
-        run: melos check-coverage
+        run: melos run check-coverage

@@ -38,23 +38,23 @@ melos:
       description: Check code formatting for all packages in parallel.
 
     analyze:
-      run: melos exec -- "dart analyze ."
+      run: melos exec --fail-fast -- "dart analyze ."
       description: Run static analysis for all packages in parallel.
 
     test:
-      run: dart test -j 8 --test-randomize-ordering-seed random
-      description: Run unit tests for the cover package with high concurrency.
+      run: melos exec -- "dart test -j 8 --test-randomize-ordering-seed random"
+      description: Run unit tests for all packages in the workspace.
 
     coverage:
       run: |
-        dart test -j 8 --test-randomize-ordering-seed random --coverage=coverage
+        melos exec -- "dart test -j 8 --test-randomize-ordering-seed random --coverage=coverage"
         format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib
-      description: Run tests and generate LCOV report for the cover package.
+      description: Run tests and generate LCOV report for the workspace.
 
     check-coverage:
       run: dart bin/cover.dart check -u
       description: Validate coverage thresholds using the locally built tool.
 
     check-all:
-      run: melos run format:check && melos run analyze && melos run coverage && melos run check-coverage
+      run: melos run format:check && melos run analyze && melos run test && melos run check-coverage
       description: Run all quality checks (format, analyze, test, coverage).
