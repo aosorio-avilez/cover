@@ -6,11 +6,11 @@ import 'package:args/command_runner.dart';
 import 'package:cover/src/cover_command_runner.dart';
 import 'package:cover/src/extensions/double_extension.dart';
 import 'package:cover/src/extensions/record_extension.dart';
+import 'package:cover/src/extensions/string_extension.dart';
 import 'package:cover/src/models/coverage_result.dart';
 import 'package:cover/src/models/exit_code.dart';
 import 'package:cover/src/services/coverage_service.dart';
 import 'package:dart_console/dart_console.dart';
-import 'package:cover/src/extensions/string_extension.dart';
 import 'package:lcov_parser/lcov_parser.dart';
 
 const filePathArgumentName = 'path';
