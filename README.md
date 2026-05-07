@@ -4,61 +4,61 @@
 [![cover](https://github.com/aosorio-avilez/cover/actions/workflows/cover.yaml/badge.svg?branch=main)](https://github.com/aosorio-avilez/cover/actions/workflows/cover.yaml)
 [![codecov](https://codecov.io/gh/aosorio-avilez/cover/branch/main/graph/badge.svg?token=ZWOS98VTND)](https://codecov.io/gh/aosorio-avilez/cover)
 
-`cover` es la forma más sencilla y robusta de verificar la cobertura de tu código Dart/Flutter directamente desde la terminal o tus scripts.
+`cover` is the simplest and most robust way to check your Dart/Flutter code coverage directly from the terminal or your scripts.
 
-## ✨ Características
+## ✨ Features
 
-- 📊 **Reportes Claros**: Genera una tabla elegante con el resumen de cobertura por archivo.
-- 🚀 **Ideal para CI/CD**: Devuelve códigos de salida (exit codes) para fallar pipelines si la cobertura es insuficiente.
-- 🔍 **Líneas Faltantes**: Muestra exactamente qué números de línea te faltan por probar con `--show-uncovered`.
-- 🧹 **Filtros Inteligentes**: Ignora archivos generados (`.g.dart`, `.freezed.dart`, etc.) con un solo flag.
-- 🤖 **Salida JSON**: Perfecto para integraciones con otras herramientas.
-- 🛡️ **Seguro**: Protección contra inyecciones ANSI y manejo de errores robusto.
+- 📊 **Clear Reports**: Generates an elegant table with coverage summaries per file.
+- 🚀 **CI/CD Ready**: Returns explicit exit codes to fail pipelines if coverage is insufficient.
+- 🔍 **Missing Lines**: Shows exactly which line numbers are missing coverage with `--show-uncovered`.
+- 🧹 **Smart Filters**: Ignore generated files (`.g.dart`, `.freezed.dart`, etc.) with a single flag.
+- 🤖 **JSON Output**: Perfect for integration with other tools.
+- 🛡️ **Secure**: Protected against ANSI injection attacks and features robust error handling.
 
-## 📦 Instalación
+## 📦 Installation
 
-### Uso Global (Recomendado)
+### Global Usage (Recommended)
 ```sh
 dart pub global activate cover
 ```
 
-### Como Dependencia de Desarrollo
-Añádelo a tu `pubspec.yaml`:
+### As a Dev Dependency
+Add it to your `pubspec.yaml`:
 ```yaml
 dev_dependencies:
-  cover: ^0.5.1
+  cover: ^0.5.2
 ```
 
-## 🚀 Uso desde CLI
+## 🚀 CLI Usage
 
 ```sh
-# Verificación básica (busca coverage/lcov.info por defecto)
+# Basic check (looks for coverage/lcov.info by default)
 $ cover check
 
-# Configurar un mínimo de cobertura y mostrar líneas no cubiertas
+# Enforce minimum coverage and show missing lines
 $ cover check --min-coverage 90 --show-uncovered
 
-# Ignorar archivos generados y excluir carpetas específicas
+# Ignore generated files and exclude specific paths
 $ cover check --exclude-generated --excluded-paths "lib/generated, lib/src/legacy"
 
-# Obtener salida en formato JSON
+# Get output in JSON format
 $ cover check --json
 ```
 
-### Flags Disponibles
+### Available Flags
 
-| Flag | Abbr | Descripción | Por defecto |
+| Flag | Abbr | Description | Default |
 | :--- | :--- | :--- | :--- |
-| `--path` | `-p` | Ruta al archivo `lcov.info` | `coverage/lcov.info` |
-| `--min-coverage` | `-m` | Porcentaje mínimo requerido | `100.0` |
-| `--show-uncovered`| `-u` | Muestra los números de líneas no cubiertas | `false` |
-| `--exclude-generated`| | Ignora archivos `.g.dart`, `.freezed.dart`, etc. | `false` |
-| `--excluded-paths`| `-e` | Rutas separadas por coma a excluir | `""` |
-| `--json` | `-j` | Salida en formato JSON | `false` |
+| `--path` | `-p` | Path to the `lcov.info` file | `coverage/lcov.info` |
+| `--min-coverage` | `-m` | Minimum required coverage percentage | `100.0` |
+| `--show-uncovered`| `-u` | Displays line numbers for missing coverage | `false` |
+| `--exclude-generated`| | Ignores `.g.dart`, `.freezed.dart`, etc. | `false` |
+| `--excluded-paths`| `-e` | Comma-separated paths to exclude | `""` |
+| `--json` | `-j` | Output in JSON format | `false` |
 
-## 🛠️ Uso Programático
+## 🛠️ Programmatic Usage
 
-Puedes integrar `cover` directamente en tu lógica de Dart:
+You can integrate `cover` directly into your Dart logic:
 
 ```dart
 import 'package:cover/cover.dart';
@@ -72,13 +72,13 @@ void main() async {
     excludeGenerated: true,
   );
 
-  print('Cobertura total: ${result.coverage}%');
+  print('Total coverage: ${result.coverage}%');
 }
 ```
 
-## 📸 Ejemplo de Salida
+## 📸 Output Example
 
 <img src="https://raw.githubusercontent.com/aosorio-avilez/cover/main/resources/cover_example.png" width="600" />
 
-## 🤝 Contribuciones e Issues
-Si encuentras un error o tienes una idea, abre un issue en nuestro [rastreador de problemas](https://github.com/aosorio-avilez/cover/issues).
+## 🤝 Issues and Feedback
+If you find a bug or have a feature request, please open an issue in our [issue tracker](https://github.com/aosorio-avilez/cover/issues).

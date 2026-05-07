@@ -1,3 +1,7 @@
+## 0.5.2
+
+- **Docs**: Corrected `README.md` to English and improved features documentation.
+
 ## 0.5.1
 
 - **Docs**: Comprehensive overhaul of `README.md` with better features documentation, CLI flags table, and programmatic usage examples.
