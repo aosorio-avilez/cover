@@ -1,9 +1,14 @@
+## 0.5.1
+
+- **Docs**: Comprehensive overhaul of `README.md` with better features documentation, CLI flags table, and programmatic usage examples.
+
 ## 0.5.0
 
 - **Feat**: Added automated Release Manager workflow for AI agents.
 - **Fix**: Implemented terminal output sanitization via `StringExtension.sanitize()` to prevent ANSI injection attacks.
 - **Fix**: Restored 100% test coverage for CLI error paths and runner exceptions.
 - **Chore**: Improved repository hygiene by properly excluding IDE-specific artifacts in `.gitignore`.
+- **Perf**: Optimized Melos scripts for parallel execution and increased test concurrency.
 
 ## 0.4.0
 

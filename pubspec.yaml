@@ -1,6 +1,6 @@
 name: cover
 description: A simple and efficient tool for comprehensive code coverage analysis.
-version: 0.5.0
+version: 0.5.1
 repository: https://github.com/aosorio-avilez/cover
 
 environment:
