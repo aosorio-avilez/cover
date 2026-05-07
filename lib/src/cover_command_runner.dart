@@ -5,6 +5,7 @@ import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:cli_completion/cli_completion.dart';
 import 'package:cover/src/commands/check_coverage_command.dart';
+import 'package:cover/src/extensions/string_extension.dart';
 import 'package:cover/src/models/exit_code.dart';
 import 'package:cover/src/services/coverage_service.dart';
 import 'package:dart_console/dart_console.dart';
@@ -96,7 +97,7 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
       printError(e.errMsg());
       return ExitCode.osFile.code;
     } catch (e) {
-      _console.writeErrorLine('An unexpected error occurred: $e');
+      _console.writeErrorLine('An unexpected error occurred: $e'.sanitize());
       return ExitCode.software.code;
     }
   }
@@ -114,7 +115,7 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
 
   void printError(String message) {
     _console
-      ..writeErrorLine(message)
+      ..writeErrorLine(message.sanitize())
       ..writeLine()
       ..writeLine(usage);
   }
