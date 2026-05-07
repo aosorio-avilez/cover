@@ -1,3 +1,8 @@
+## 0.5.3
+
+- **Perf**: Optimized CI/CD performance by implementing parallel jobs and dependency caching.
+- **Chore**: Updated Melos scripts for better workspace consistency and fail-fast behavior.
+
 ## 0.5.2
 
 - **Docs**: Corrected `README.md` to English and improved features documentation.
