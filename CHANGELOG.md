@@ -1,3 +1,19 @@
+## 0.5.2
+
+- **Docs**: Corrected `README.md` to English and improved features documentation.
+
+## 0.5.1
+
+- **Docs**: Comprehensive overhaul of `README.md` with better features documentation, CLI flags table, and programmatic usage examples.
+
+## 0.5.0
+
+- **Feat**: Added automated Release Manager workflow for AI agents.
+- **Fix**: Implemented terminal output sanitization via `StringExtension.sanitize()` to prevent ANSI injection attacks.
+- **Fix**: Restored 100% test coverage for CLI error paths and runner exceptions.
+- **Chore**: Improved repository hygiene by properly excluding IDE-specific artifacts in `.gitignore`.
+- **Perf**: Optimized Melos scripts for parallel execution and increased test concurrency.
+
 ## 0.4.0
 
 - **Feat**: Added `--show-uncovered` flag to display missing coverage line numbers.
@@ -11,7 +27,6 @@
 - **Refactor**: Consolidated agent guidelines and removed legacy `AGENTS.md`.
 - **Fix**: Enhanced `CheckCoverageCommand` with robust error handling and structured JSON error reporting for failure scenarios.
 - **Refactor**: Optimized `CoverCommandRunner.getVersion` using non-blocking I/O to prevent event loop blockage and TOCTOU.
-- **Chore**: Improved repository hygiene by excluding IDE-specific artifacts in `.gitignore`.
 
 ## 0.3.0
 

@@ -135,8 +135,11 @@ void main() {
       );
       final exitCode = await runner.run(['error-generic']);
       expect(exitCode, ExitCode.software.code);
-      verify(() => console.writeErrorLine(
-          any(that: contains('An unexpected error occurred')))).called(1);
+      verify(
+        () => console.writeErrorLine(
+          any(that: contains('An unexpected error occurred')),
+        ),
+      ).called(1);
     });
 
     test('verify global exception handler catches unexpected errors', () async {
