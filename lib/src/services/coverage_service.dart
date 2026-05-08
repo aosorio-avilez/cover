@@ -25,6 +25,37 @@ class CoverageService {
     required double minCoverage,
     List<String> excludePaths = const [],
     bool excludeGenerated = false,
+    String? baselinePath,
+  }) async {
+    final files = await _getCoverageData(
+      filePath: filePath,
+      excludePaths: excludePaths,
+      excludeGenerated: excludeGenerated,
+    );
+
+    final currentCoverage = files.getCodeCoverageResult();
+
+    double? baselineCoverage;
+    if (baselinePath != null && baselinePath.isNotEmpty) {
+      final baselineFiles = await _getCoverageData(
+        filePath: baselinePath,
+        excludePaths: excludePaths,
+        excludeGenerated: excludeGenerated,
+      );
+      baselineCoverage = baselineFiles.getCodeCoverageResult();
+    }
+
+    return CoverageResult(
+      coverage: currentCoverage,
+      files: files,
+      baselineCoverage: baselineCoverage,
+    );
+  }
+
+  Future<List<Record>> _getCoverageData({
+    required String filePath,
+    required List<String> excludePaths,
+    required bool excludeGenerated,
   }) async {
     if (filePath.isEmpty) {
       throw const PathNotFoundException(
@@ -64,9 +95,7 @@ class CoverageService {
       );
     }
 
-    final currentCoverage = files.getCodeCoverageResult();
-
-    return CoverageResult(coverage: currentCoverage, files: files);
+    return files;
   }
 
   Future<List<Record>> _parseCoverageFile(
@@ -74,7 +103,6 @@ class CoverageService {
     List<String> excludedPaths, {
     bool excludeGenerated = false,
   }) async {
-    // Note: filePath is now expected to be a validated, absolute path.
     List<Record> files;
     try {
       files = await Parser.parse(filePath);

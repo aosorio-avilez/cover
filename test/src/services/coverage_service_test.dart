@@ -186,5 +186,27 @@ void main() {
 
       verify(mockDir.resolveSymbolicLinks).called(1);
     });
+
+    test('checkCoverage with baseline returns baseline coverage', () async {
+      final result = await service.checkCoverage(
+        filePath: 'test/stubs/lcov_incomplete.info', // 94.52%
+        minCoverage: 0,
+        baselinePath: 'test/stubs/lcov_complete.info', // 100%
+      );
+
+      expect(result.coverage, 94.52);
+      expect(result.baselineCoverage, 100.0);
+    });
+
+    test('checkCoverage with same baseline has 0 delta', () async {
+      final result = await service.checkCoverage(
+        filePath: 'test/stubs/lcov_complete.info',
+        minCoverage: 0,
+        baselinePath: 'test/stubs/lcov_complete.info',
+      );
+
+      expect(result.coverage, 100.0);
+      expect(result.baselineCoverage, 100.0);
+    });
   });
 }
