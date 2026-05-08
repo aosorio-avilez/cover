@@ -1,5 +1,6 @@
-## 0.5.3
+## 0.6.0
 
+- **Feat**: Added `--baseline` (or `-b`) flag to `check` command for coverage regression detection against a reference LCOV file.
 - **Fix**: Enhanced `CoverCommandRunner` and `CheckCoverageCommand` with robust JSON error reporting for usage and formatting errors.
 - **Perf**: Optimized `RecordExtension` with manual loops and `StringBuffer` for faster uncovered lines extraction and range formatting.
 - **Perf**: Optimized CI/CD performance by implementing parallel jobs and dependency caching.
