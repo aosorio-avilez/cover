@@ -13,6 +13,7 @@
 - 🔍 **Missing Lines**: Shows exactly which line numbers are missing coverage with `--show-uncovered`.
 - 🧹 **Smart Filters**: Ignore generated files (`.g.dart`, `.freezed.dart`, etc.) with a single flag.
 - 🤖 **JSON Output**: Perfect for integration with other tools.
+- 📉 **Regression Detection**: Compare current coverage against a baseline file using `--baseline`.
 - 🛡️ **Secure**: Protected against ANSI injection attacks and features robust error handling.
 
 ## 📦 Installation
@@ -43,6 +44,9 @@ $ cover check --exclude-generated --excluded-paths "lib/generated, lib/src/legac
 
 # Get output in JSON format
 $ cover check --json
+
+# Compare against a baseline (e.g. from main branch)
+$ cover check --baseline coverage/lcov.base.info
 ```
 
 ### Available Flags
@@ -55,6 +59,7 @@ $ cover check --json
 | `--exclude-generated`| | Ignores `.g.dart`, `.freezed.dart`, etc. | `false` |
 | `--excluded-paths`| `-e` | Comma-separated paths to exclude | `""` |
 | `--json` | `-j` | Output in JSON format | `false` |
+| `--baseline` | `-b` | Baseline LCOV file to compare with | `null` |
 
 ## 🛠️ Programmatic Usage
 
