@@ -78,26 +78,42 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
 
   @override
   Future<int?> run(Iterable<String> args) async {
+    var isJson = args.contains('--$jsonFlag') || args.contains('-j');
+
     try {
       final topLevelResults = parse(args);
-      return await runCommand(topLevelResults);
+      isJson = topLevelResults[jsonFlag] == true;
+      final exitCode = await runCommand(topLevelResults);
+      if (exitCode == null && !topLevelResults.wasParsed('help')) {
+        printError('Missing subcommand.', isJson: isJson);
+        return ExitCode.usage.code;
+      }
+      return exitCode;
     } on UsageException catch (e) {
-      printError(e.message);
+      printError(e.message, isJson: isJson, code: ExitCode.usage);
       return ExitCode.usage.code;
     } on FormatException catch (e) {
-      printError(e.message);
+      printError(e.message, isJson: isJson, code: ExitCode.usage);
       return ExitCode.usage.code;
     } on PathNotFoundException catch (e) {
-      printError(e.osError?.message ?? e.message);
+      printError(e.osError?.message ?? e.message,
+          isJson: isJson, code: ExitCode.osFile);
       return ExitCode.osFile.code;
     } on FileSystemException catch (e) {
-      printError(e.message);
+      printError(e.message, isJson: isJson, code: ExitCode.osFile);
       return ExitCode.osFile.code;
     } on FileMustBeProvided catch (e) {
-      printError(e.errMsg());
+      printError(e.errMsg(), isJson: isJson, code: ExitCode.osFile);
       return ExitCode.osFile.code;
     } catch (e) {
-      _console.writeErrorLine('An unexpected error occurred: $e'.sanitize());
+      final message = 'An unexpected error occurred: $e';
+      if (isJson) {
+        _console.writeLine(
+          _formatJsonError(message.sanitize(), ExitCode.software),
+        );
+      } else {
+        _console.writeErrorLine(message.sanitize());
+      }
       return ExitCode.software.code;
     }
   }
@@ -113,11 +129,22 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
     return super.runCommand(topLevelResults);
   }
 
-  void printError(String message) {
-    _console
-      ..writeErrorLine(message.sanitize())
-      ..writeLine()
-      ..writeLine(usage);
+  void printError(String message,
+      {bool isJson = false, ExitCode code = ExitCode.usage}) {
+    final sanitizedMessage = message.sanitize();
+    if (isJson) {
+      _console.writeLine(_formatJsonError(sanitizedMessage, code));
+    } else {
+      _console
+        ..writeErrorLine(sanitizedMessage)
+        ..writeLine()
+        ..writeLine(usage);
+    }
+  }
+
+  String _formatJsonError(String message, ExitCode code) {
+    final escapedMessage = message.replaceAll('"', r'\"');
+    return '{"error": "$escapedMessage", "exit_code": ${code.code}, "status": "${code.name}"}';
   }
 
   Future<String> getVersion() async {

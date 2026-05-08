@@ -57,15 +57,16 @@ class CheckCoverageCommand extends Command<int> {
 
   @override
   FutureOr<int>? run() async {
-    final filePath = getPathArgument();
-    final minCoverage = getMinCoverageArgument();
-    final displayFiles = getDisplayFilesArgument();
-    final excludePaths = getExcludePathsArgument();
-    final excludeGenerated = getExcludeGeneratedArgument();
     final isJson = getJsonArgument();
-    final showUncovered = getShowUncoveredArgument();
 
     try {
+      final filePath = getPathArgument();
+      final minCoverage = getMinCoverageArgument();
+      final displayFiles = getDisplayFilesArgument();
+      final excludePaths = getExcludePathsArgument();
+      final excludeGenerated = getExcludeGeneratedArgument();
+      final showUncovered = getShowUncoveredArgument();
+
       final result = await _service.checkCoverage(
         filePath: filePath,
         minCoverage: minCoverage,
@@ -86,6 +87,8 @@ class CheckCoverageCommand extends Command<int> {
       return result.coverage >= minCoverage
           ? ExitCode.success.code
           : ExitCode.fail.code;
+    } on UsageException catch (e) {
+      return _handleError(e.message, isJson: isJson, code: ExitCode.usage);
     } on PathNotFoundException catch (e) {
       return _handleError(
         e.osError?.message ?? e.message,
