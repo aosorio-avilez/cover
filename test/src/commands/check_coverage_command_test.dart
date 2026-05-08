@@ -248,4 +248,52 @@ void main() {
       verifyNever(() => console.resetColorAttributes());
     },
   );
+
+  test('verify check coverage command fails when coverage regresses from baseline', () async {
+    final exitCode = await runner.run([
+      'check',
+      '--path',
+      'test/stubs/lcov_incomplete.info', // 94.52%
+      '--baseline',
+      'test/stubs/lcov_complete.info', // 100%
+      '--min-coverage',
+      '0',
+    ]);
+
+    expect(exitCode, ExitCode.fail.code);
+    verify(() => console.writeLine(any(), any())).called(3); // min, baseline, current
+  });
+
+  test('verify check coverage command succeeds when coverage is higher than baseline', () async {
+    final exitCode = await runner.run([
+      'check',
+      '--path',
+      'test/stubs/lcov_complete.info', // 100%
+      '--baseline',
+      'test/stubs/lcov_incomplete.info', // 94.52%
+    ]);
+
+    expect(exitCode, ExitCode.success.code);
+  });
+
+  test('verify check coverage command JSON includes baseline and delta', () async {
+    final exitCode = await runner.run([
+      'check',
+      '--path',
+      'test/stubs/lcov_incomplete.info', // 94.52%
+      '--baseline',
+      'test/stubs/lcov_complete.info', // 100%
+      '--json',
+    ]);
+
+    expect(exitCode, ExitCode.fail.code);
+    final captured =
+        verify(() => console.writeLine(captureAny(), any())).captured;
+    final jsonOutput = captured.first as String;
+    final decoded = jsonDecode(jsonOutput) as Map<String, dynamic>;
+
+    expect(decoded['baseline_coverage'], 100.0);
+    expect(decoded['delta'], -5.48);
+    expect(decoded['passed'], isFalse);
+  });
 }

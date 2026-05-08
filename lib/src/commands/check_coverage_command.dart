@@ -39,6 +39,9 @@ const showUncoveredArgumentName = 'show-uncovered';
 const defaultShowUncovered = false;
 const showUncoveredHelp = 'Display uncovered line numbers';
 
+const baselineArgumentName = 'baseline';
+const baselineHelp = 'Specify a baseline coverage file to compare with.';
+
 const commandDescription = 'Check code coverage';
 const commandName = 'check';
 
@@ -66,12 +69,14 @@ class CheckCoverageCommand extends Command<int> {
       final excludePaths = getExcludePathsArgument();
       final excludeGenerated = getExcludeGeneratedArgument();
       final showUncovered = getShowUncoveredArgument();
+      final baselinePath = getBaselineArgument();
 
       final result = await _service.checkCoverage(
         filePath: filePath,
         minCoverage: minCoverage,
         excludePaths: excludePaths,
         excludeGenerated: excludeGenerated,
+        baselinePath: baselinePath,
       );
 
       _displayResult(
@@ -84,7 +89,11 @@ class CheckCoverageCommand extends Command<int> {
         showUncovered: showUncovered,
       );
 
-      return result.coverage >= minCoverage
+      final passedMinCoverage = result.coverage >= minCoverage;
+      final passedBaseline = result.baselineCoverage == null ||
+          result.coverage >= result.baselineCoverage!;
+
+      return passedMinCoverage && passedBaseline
           ? ExitCode.success.code
           : ExitCode.fail.code;
     } on UsageException catch (e) {
@@ -144,8 +153,25 @@ class CheckCoverageCommand extends Command<int> {
 
       console
         ..writeLine('Minimum coverage: $greenColor$minCoverage%')
-        ..resetColorAttributes()
-        ..writeLine('Current coverage: $color$currentCoverage%');
+        ..resetColorAttributes();
+
+      if (result.baselineCoverage != null) {
+        final baseline = result.baselineCoverage!;
+        final delta =
+            (currentCoverage - baseline).roundToDoubleWithPrecision(2);
+        final deltaPrefix = delta >= 0 ? '+' : '';
+        final deltaColor = delta >= 0 ? greenColor : redColor;
+
+        console
+          ..writeLine('Baseline coverage: $yellowColor$baseline%')
+          ..resetColorAttributes()
+          ..writeLine(
+            'Current coverage: $color$currentCoverage% '
+            '($deltaColor$deltaPrefix$delta%)',
+          );
+      } else {
+        console.writeLine('Current coverage: $color$currentCoverage%');
+      }
     }
   }
 
@@ -244,5 +270,9 @@ class CheckCoverageCommand extends Command<int> {
   bool getShowUncoveredArgument() {
     return globalResults?[showUncoveredArgumentName] as bool? ??
         defaultShowUncovered;
+  }
+
+  String? getBaselineArgument() {
+    return globalResults?[baselineArgumentName] as String?;
   }
 }
