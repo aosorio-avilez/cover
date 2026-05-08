@@ -6,31 +6,43 @@ extension RecordExtension on Record {
   List<int> get uncoveredLines {
     final details = lines?.details;
     if (details == null) return [];
-    return details
-        .where((detail) => (detail.hit ?? 0) == 0)
-        .map((detail) => detail.line ?? 0)
-        .where((line) => line != 0)
-        .toList();
+
+    final uncovered = <int>[];
+    final len = details.length;
+    for (var i = 0; i < len; i++) {
+      final detail = details[i];
+      if ((detail.hit ?? 0) == 0) {
+        final line = detail.line ?? 0;
+        if (line != 0) {
+          uncovered.add(line);
+        }
+      }
+    }
+    return uncovered;
   }
 
   String _formatUncoveredLines(List<int> lines) {
     if (lines.isEmpty) return '';
     lines.sort();
-    final ranges = <String>[];
+    final buffer = StringBuffer();
     var start = lines[0];
     var end = lines[0];
 
-    for (var i = 1; i < lines.length; i++) {
-      if (lines[i] == end + 1) {
-        end = lines[i];
+    final len = lines.length;
+    for (var i = 1; i < len; i++) {
+      final current = lines[i];
+      if (current == end + 1) {
+        end = current;
       } else {
-        ranges.add(start == end ? '$start' : '$start-$end');
-        start = lines[i];
-        end = lines[i];
+        if (buffer.isNotEmpty) buffer.write(', ');
+        buffer.write(start == end ? '$start' : '$start-$end');
+        start = current;
+        end = current;
       }
     }
-    ranges.add(start == end ? '$start' : '$start-$end');
-    return ranges.join(', ');
+    if (buffer.isNotEmpty) buffer.write(', ');
+    buffer.write(start == end ? '$start' : '$start-$end');
+    return buffer.toString();
   }
 
   double get coveragePercentage {
