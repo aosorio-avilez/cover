@@ -1,5 +1,6 @@
 ## 0.5.3
 
+- **Perf**: Optimized `RecordExtension` with manual loops and `StringBuffer` for faster uncovered lines extraction and range formatting.
 - **Perf**: Optimized CI/CD performance by implementing parallel jobs and dependency caching.
 - **Chore**: Updated Melos scripts for better workspace consistency and fail-fast behavior.
 
