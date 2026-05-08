@@ -1,10 +1,12 @@
 import 'dart:convert';
+
 import 'package:args/args.dart';
 import 'package:cover/src/cover_command_runner.dart';
 import 'package:cover/src/models/exit_code.dart';
 import 'package:dart_console/dart_console.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
+
 import '../mocks/coverage_service_mock.dart';
 
 class ConsoleMock extends Mock implements Console {}
@@ -100,12 +102,14 @@ void main() {
       final service = CoverageServiceMock();
       final runner = CoverCommandRunner(console: console, service: service);
 
-      when(() => service.checkCoverage(
-            filePath: any(named: 'filePath'),
-            minCoverage: any(named: 'minCoverage'),
-            excludePaths: any(named: 'excludePaths'),
-            excludeGenerated: any(named: 'excludeGenerated'),
-          )).thenThrow(Exception('Unexpected error'));
+      when(
+        () => service.checkCoverage(
+          filePath: any(named: 'filePath'),
+          minCoverage: any(named: 'minCoverage'),
+          excludePaths: any(named: 'excludePaths'),
+          excludeGenerated: any(named: 'excludeGenerated'),
+        ),
+      ).thenThrow(Exception('Unexpected error'));
 
       final exitCode = await runner.run([
         'check',
@@ -135,8 +139,7 @@ void main() {
 
       expect(exitCode, ExitCode.software.code);
 
-      final captured =
-          verify(() => console.writeLine(captureAny())).captured;
+      final captured = verify(() => console.writeLine(captureAny())).captured;
       final output = captured.first as String;
 
       final decoded = jsonDecode(output) as Map<String, dynamic>;
