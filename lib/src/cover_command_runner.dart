@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
@@ -90,20 +91,31 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
       }
       return exitCode;
     } on UsageException catch (e) {
-      printError(e.message, isJson: isJson, code: ExitCode.usage);
+      printError(e.message, isJson: isJson);
       return ExitCode.usage.code;
     } on FormatException catch (e) {
-      printError(e.message, isJson: isJson, code: ExitCode.usage);
+      printError(e.message, isJson: isJson);
       return ExitCode.usage.code;
     } on PathNotFoundException catch (e) {
-      printError(e.osError?.message ?? e.message,
-          isJson: isJson, code: ExitCode.osFile);
+      printError(
+        e.osError?.message ?? e.message,
+        isJson: isJson,
+        code: ExitCode.osFile,
+      );
       return ExitCode.osFile.code;
     } on FileSystemException catch (e) {
-      printError(e.message, isJson: isJson, code: ExitCode.osFile);
+      printError(
+        e.message,
+        isJson: isJson,
+        code: ExitCode.osFile,
+      );
       return ExitCode.osFile.code;
     } on FileMustBeProvided catch (e) {
-      printError(e.errMsg(), isJson: isJson, code: ExitCode.osFile);
+      printError(
+        e.errMsg(),
+        isJson: isJson,
+        code: ExitCode.osFile,
+      );
       return ExitCode.osFile.code;
     } catch (e) {
       final message = 'An unexpected error occurred: $e';
@@ -129,8 +141,11 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
     return super.runCommand(topLevelResults);
   }
 
-  void printError(String message,
-      {bool isJson = false, ExitCode code = ExitCode.usage}) {
+  void printError(
+    String message, {
+    bool isJson = false,
+    ExitCode code = ExitCode.usage,
+  }) {
     final sanitizedMessage = message.sanitize();
     if (isJson) {
       _console.writeLine(_formatJsonError(sanitizedMessage, code));
@@ -143,8 +158,11 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
   }
 
   String _formatJsonError(String message, ExitCode code) {
-    final escapedMessage = message.replaceAll('"', r'\"');
-    return '{"error": "$escapedMessage", "exit_code": ${code.code}, "status": "${code.name}"}';
+    return jsonEncode({
+      'error': message,
+      'exit_code': code.code,
+      'status': code.name,
+    });
   }
 
   Future<String> getVersion() async {
