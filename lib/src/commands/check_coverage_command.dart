@@ -96,6 +96,13 @@ class CheckCoverageCommand extends Command<int> {
       return passedMinCoverage && passedBaseline
           ? ExitCode.success.code
           : ExitCode.fail.code;
+    // ignore: avoid_catching_errors
+    } on ArgumentError catch (e) {
+      return _handleError(
+        e.message?.toString() ?? '',
+        isJson: isJson,
+        code: ExitCode.usage,
+      );
     } on UsageException catch (e) {
       return _handleError(e.message, isJson: isJson, code: ExitCode.usage);
     } on PathNotFoundException catch (e) {

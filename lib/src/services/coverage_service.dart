@@ -64,6 +64,12 @@ class CoverageService {
       );
     }
 
+    if (!filePath.endsWith('.info')) {
+      throw const FormatException(
+        'Invalid file type. Expected a .info file.',
+      );
+    }
+
     final resolvedPath = await _validatePath(filePath);
 
     // Optimization: use FileStat.stat() to retrieve existence, type, and size
@@ -106,6 +112,10 @@ class CoverageService {
     List<Record> files;
     try {
       files = await Parser.parse(filePath);
+    } on FileSystemException {
+      rethrow;
+    } on FileMustBeProvided {
+      rethrow;
     } catch (e) {
       throw FormatException('Failed to parse coverage file: $e');
     }
