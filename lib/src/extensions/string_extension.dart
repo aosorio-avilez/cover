@@ -15,6 +15,10 @@ extension StringExtension on String {
 bool _hasAnsiOrControlChars(String s) {
   for (var i = 0; i < s.length; i++) {
     final code = s.codeUnitAt(i);
+    // Fast-path for ASCII printable characters (0x20 - 0x7E) which are the most
+    // common characters in source file paths and error messages.
+    if (code >= 0x20 && code <= 0x7E) continue;
+
     // 0x00-0x1F (control chars including \x1B) and 0x7F (DEL)
     // Also include Unicode Bidi control characters.
     if (code <= 0x1F ||
