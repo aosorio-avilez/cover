@@ -15,11 +15,13 @@ extension DoubleExtension on double {
     return (this * mod).roundToDouble() / mod;
   }
 
-  String getCoverageColorAnsi() {
-    return switch (this) {
-      100 => greenColor,
-      >= 80 && < 100 => yellowColor,
-      _ => redColor,
-    };
+  String getCoverageColorAnsi({double minCoverage = 100.0}) {
+    if (this >= minCoverage) {
+      return greenColor;
+    }
+    if (this >= minCoverage * 0.8) {
+      return yellowColor;
+    }
+    return redColor;
   }
 }

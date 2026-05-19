@@ -3,11 +3,10 @@ import 'dart:convert';
 import 'package:cover/src/commands/check_coverage_command.dart';
 import 'package:cover/src/cover_command_runner.dart';
 import 'package:cover/src/models/exit_code.dart';
+import 'package:cover/src/services/coverage_service.dart';
 import 'package:dart_console/dart_console.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
-
-import 'package:cover/src/services/coverage_service.dart';
 
 import '../../mocks/console_mock.dart';
 
@@ -307,17 +306,21 @@ void main() {
     expect(decoded['passed'], isFalse);
   });
 
-  test('verify check coverage command catches ArgumentError gracefully', () async {
+  test('verify check coverage command catches ArgumentError gracefully',
+      () async {
     final mockService = MockCoverageService();
-    final customRunner = CoverCommandRunner(console: console, service: mockService);
+    final customRunner =
+        CoverCommandRunner(console: console, service: mockService);
 
-    when(() => mockService.checkCoverage(
-      filePath: any(named: 'filePath'),
-      minCoverage: any(named: 'minCoverage'),
-      excludePaths: any(named: 'excludePaths'),
-      excludeGenerated: any(named: 'excludeGenerated'),
-      baselinePath: any(named: 'baselinePath'),
-    )).thenThrow(ArgumentError('Mock invalid argument'));
+    when(
+      () => mockService.checkCoverage(
+        filePath: any(named: 'filePath'),
+        minCoverage: any(named: 'minCoverage'),
+        excludePaths: any(named: 'excludePaths'),
+        excludeGenerated: any(named: 'excludeGenerated'),
+        baselinePath: any(named: 'baselinePath'),
+      ),
+    ).thenThrow(ArgumentError('Mock invalid argument'));
 
     final exitCode = await customRunner.run([
       'check',
@@ -331,4 +334,56 @@ void main() {
     final message = captured.first as String;
     expect(message, contains('Mock invalid argument'));
   });
+
+  test(
+    'verify check coverage command filters table with --failures-only flag',
+    () async {
+      final exitCode = await runner.run([
+        'check',
+        '--path',
+        'test/stubs/lcov_incomplete.info',
+        '--min-coverage',
+        '90',
+        '--failures-only',
+      ]);
+
+      expect(exitCode, ExitCode.success.code);
+      final captured = verify(() => console.write(captureAny())).captured;
+      final table = captured.first as Table;
+      final tableString = table.toString();
+
+      // Passing file (100% coverage >= 90%) must be filtered out
+      expect(
+        tableString,
+        isNot(contains('lib/src/datasources/auth_data_source.dart')),
+      );
+      // Failing file (87.5% coverage < 90%) must be included
+      expect(tableString, contains('lib/src/api/auth_api_impl.dart'));
+    },
+  );
+
+  test(
+    'verify check coverage command does not filter passing files when --failures-only is not set',
+    () async {
+      final exitCode = await runner.run([
+        'check',
+        '--path',
+        'test/stubs/lcov_incomplete.info',
+        '--min-coverage',
+        '90',
+      ]);
+
+      expect(exitCode, ExitCode.success.code);
+      final captured = verify(() => console.write(captureAny())).captured;
+      final table = captured.first as Table;
+      final tableString = table.toString();
+
+      // Both passing and failing files must be included
+      expect(
+        tableString,
+        contains('lib/src/datasources/auth_data_source.dart'),
+      );
+      expect(tableString, contains('lib/src/api/auth_api_impl.dart'));
+    },
+  );
 }

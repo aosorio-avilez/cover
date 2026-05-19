@@ -65,9 +65,9 @@ extension RecordExtension on Record {
     };
   }
 
-  List<Object> toRow({bool showUncovered = false}) {
+  List<Object> toRow({bool showUncovered = false, double minCoverage = 100.0}) {
     final percentage = coveragePercentage;
-    final color = percentage.getCoverageColorAnsi();
+    final color = percentage.getCoverageColorAnsi(minCoverage: minCoverage);
     final lines = this.lines;
 
     // Optimization: Use a fast-path for 100% coverage by using the `green100`

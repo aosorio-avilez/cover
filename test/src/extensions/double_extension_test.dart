@@ -19,4 +19,31 @@ void main() {
     const coverage = 50.0;
     expect(coverage.getCoverageColorAnsi(), redColor);
   });
+
+  group('threshold-aware coloring', () {
+    test('returns greenColor if coverage meets custom threshold', () {
+      const coverage = 85.0;
+      expect(
+        coverage.getCoverageColorAnsi(minCoverage: 80),
+        greenColor,
+      );
+    });
+
+    test('returns yellowColor if coverage is close to custom threshold', () {
+      const coverage = 70.0;
+      expect(
+        coverage.getCoverageColorAnsi(minCoverage: 80),
+        yellowColor,
+      );
+    });
+
+    test('returns redColor if coverage is significantly below custom threshold',
+        () {
+      const coverage = 50.0;
+      expect(
+        coverage.getCoverageColorAnsi(minCoverage: 80),
+        redColor,
+      );
+    });
+  });
 }

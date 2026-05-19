@@ -70,6 +70,7 @@ class CheckCoverageCommand extends Command<int> {
       final excludeGenerated = getExcludeGeneratedArgument();
       final showUncovered = getShowUncoveredArgument();
       final baselinePath = getBaselineArgument();
+      final failuresOnly = getFailuresOnlyArgument();
 
       final result = await _service.checkCoverage(
         filePath: filePath,
@@ -87,6 +88,7 @@ class CheckCoverageCommand extends Command<int> {
         excludeGenerated: excludeGenerated,
         displayFiles: displayFiles,
         showUncovered: showUncovered,
+        failuresOnly: failuresOnly,
       );
 
       final passedMinCoverage = result.coverage >= minCoverage;
@@ -96,7 +98,7 @@ class CheckCoverageCommand extends Command<int> {
       return passedMinCoverage && passedBaseline
           ? ExitCode.success.code
           : ExitCode.fail.code;
-    // ignore: avoid_catching_errors
+      // ignore: avoid_catching_errors
     } on ArgumentError catch (e) {
       return _handleError(
         e.message?.toString() ?? '',
@@ -134,6 +136,7 @@ class CheckCoverageCommand extends Command<int> {
     required bool excludeGenerated,
     required bool displayFiles,
     required bool showUncovered,
+    required bool failuresOnly,
   }) {
     final currentCoverage = result.coverage;
 
@@ -147,19 +150,28 @@ class CheckCoverageCommand extends Command<int> {
       );
       console.writeLine(jsonOutput);
     } else {
-      final color = currentCoverage.getCoverageColorAnsi();
+      final color =
+          currentCoverage.getCoverageColorAnsi(minCoverage: minCoverage);
 
       if (displayFiles) {
         final table = buildCoverageFileTable(showUncovered: showUncovered);
         for (final record in result.files) {
-          table.insertRow(record.toRow(showUncovered: showUncovered));
+          if (failuresOnly && record.coveragePercentage >= minCoverage) {
+            continue;
+          }
+          table.insertRow(
+            record.toRow(
+              showUncovered: showUncovered,
+              minCoverage: minCoverage,
+            ),
+          );
         }
 
         console.write(table);
       }
 
       console
-        ..writeLine('Minimum coverage: $greenColor$minCoverage%')
+        ..writeLine('Minimum coverage: $greenColor$minCoverage%\x1B[0m')
         ..resetColorAttributes();
 
       if (result.baselineCoverage != null) {
@@ -170,14 +182,14 @@ class CheckCoverageCommand extends Command<int> {
         final deltaColor = delta >= 0 ? greenColor : redColor;
 
         console
-          ..writeLine('Baseline coverage: $yellowColor$baseline%')
+          ..writeLine('Baseline coverage: $yellowColor$baseline%\x1B[0m')
           ..resetColorAttributes()
           ..writeLine(
             'Current coverage: $color$currentCoverage% '
-            '($deltaColor$deltaPrefix$delta%)',
+            '($deltaColor$deltaPrefix$delta%)\x1B[0m',
           );
       } else {
-        console.writeLine('Current coverage: $color$currentCoverage%');
+        console.writeLine('Current coverage: $color$currentCoverage%\x1B[0m');
       }
     }
   }
@@ -281,5 +293,10 @@ class CheckCoverageCommand extends Command<int> {
 
   String? getBaselineArgument() {
     return globalResults?[baselineArgumentName] as String?;
+  }
+
+  bool getFailuresOnlyArgument() {
+    return globalResults?[failuresOnlyArgumentName] as bool? ??
+        defaultFailuresOnly;
   }
 }
