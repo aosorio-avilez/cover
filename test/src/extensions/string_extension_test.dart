@@ -9,6 +9,12 @@ void main() {
         expect(input.sanitize(), input);
       });
 
+      test('returns same string for printable non-ASCII/Unicode characters',
+          () {
+        const input = '¡Hola, Señor! Cómo estás? ✨';
+        expect(input.sanitize(), input);
+      });
+
       test('removes ANSI escape sequences', () {
         const input = 'Hello \x1B[31mRed\x1B[0m World';
         expect(input.sanitize(), 'Hello Red World');
