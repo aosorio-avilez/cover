@@ -249,7 +249,9 @@ void main() {
     },
   );
 
-  test('verify check coverage command fails when coverage regresses from baseline', () async {
+  test(
+      'verify check coverage command fails when coverage regresses from baseline',
+      () async {
     final exitCode = await runner.run([
       'check',
       '--path',
@@ -261,10 +263,13 @@ void main() {
     ]);
 
     expect(exitCode, ExitCode.fail.code);
-    verify(() => console.writeLine(any(), any())).called(3); // min, baseline, current
+    verify(() => console.writeLine(any(), any()))
+        .called(3); // min, baseline, current
   });
 
-  test('verify check coverage command succeeds when coverage is higher than baseline', () async {
+  test(
+      'verify check coverage command succeeds when coverage is higher than baseline',
+      () async {
     final exitCode = await runner.run([
       'check',
       '--path',
@@ -276,7 +281,8 @@ void main() {
     expect(exitCode, ExitCode.success.code);
   });
 
-  test('verify check coverage command JSON includes baseline and delta', () async {
+  test('verify check coverage command JSON includes baseline and delta',
+      () async {
     final exitCode = await runner.run([
       'check',
       '--path',

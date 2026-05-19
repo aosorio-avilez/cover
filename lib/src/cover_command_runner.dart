@@ -125,7 +125,8 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
     } catch (e) {
       final message = 'An unexpected error occurred: $e';
       if (isJson) {
-        _console.writeLine(_formatJsonError(message.sanitize(), ExitCode.software));
+        _console
+            .writeLine(_formatJsonError(message.sanitize(), ExitCode.software));
       } else {
         _console.writeErrorLine(message.sanitize());
       }
