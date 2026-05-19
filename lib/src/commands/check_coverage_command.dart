@@ -171,7 +171,7 @@ class CheckCoverageCommand extends Command<int> {
       }
 
       console
-        ..writeLine('Minimum coverage: $greenColor$minCoverage%')
+        ..writeLine('Minimum coverage: $greenColor$minCoverage%\x1B[0m')
         ..resetColorAttributes();
 
       if (result.baselineCoverage != null) {
@@ -182,14 +182,14 @@ class CheckCoverageCommand extends Command<int> {
         final deltaColor = delta >= 0 ? greenColor : redColor;
 
         console
-          ..writeLine('Baseline coverage: $yellowColor$baseline%')
+          ..writeLine('Baseline coverage: $yellowColor$baseline%\x1B[0m')
           ..resetColorAttributes()
           ..writeLine(
             'Current coverage: $color$currentCoverage% '
-            '($deltaColor$deltaPrefix$delta%)',
+            '($deltaColor$deltaPrefix$delta%)\x1B[0m',
           );
       } else {
-        console.writeLine('Current coverage: $color$currentCoverage%');
+        console.writeLine('Current coverage: $color$currentCoverage%\x1B[0m');
       }
     }
   }
