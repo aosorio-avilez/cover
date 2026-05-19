@@ -14,12 +14,12 @@ void main() {
     final runner = CoverCommandRunner(console: console);
 
     // Create a garbage file that triggers StateError in lcov_parser
-    final file = File('malformed.lcov');
+    final file = File('malformed.info');
     await file.writeAsString('GARBAGE CONTENT');
 
     try {
       // This should NOT throw an exception. It should catch it internally and return an exit code.
-      final exitCode = await runner.run(['check', '--path', 'malformed.lcov']);
+      final exitCode = await runner.run(['check', '--path', 'malformed.info']);
 
       // Verify it returned a failure code (likely usage error mapped from FormatException)
       expect(exitCode, equals(ExitCode.usage.code));
@@ -32,7 +32,7 @@ void main() {
       // Verify the message indicates a parsing failure and NOT a raw internal error
       expect(message, contains('Failed to parse coverage file'));
     } finally {
-      if (file.existsSync()) await file.delete();
+      if (file.existsSync()) file.deleteSync();
     }
   });
 }

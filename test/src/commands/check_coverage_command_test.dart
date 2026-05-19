@@ -7,7 +7,11 @@ import 'package:dart_console/dart_console.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
+import 'package:cover/src/services/coverage_service.dart';
+
 import '../../mocks/console_mock.dart';
+
+class MockCoverageService extends Mock implements CoverageService {}
 
 void main() {
   late Console console;
@@ -301,5 +305,30 @@ void main() {
     expect(decoded['baseline_coverage'], 100.0);
     expect(decoded['delta'], -5.48);
     expect(decoded['passed'], isFalse);
+  });
+
+  test('verify check coverage command catches ArgumentError gracefully', () async {
+    final mockService = MockCoverageService();
+    final customRunner = CoverCommandRunner(console: console, service: mockService);
+
+    when(() => mockService.checkCoverage(
+      filePath: any(named: 'filePath'),
+      minCoverage: any(named: 'minCoverage'),
+      excludePaths: any(named: 'excludePaths'),
+      excludeGenerated: any(named: 'excludeGenerated'),
+      baselinePath: any(named: 'baselinePath'),
+    )).thenThrow(ArgumentError('Mock invalid argument'));
+
+    final exitCode = await customRunner.run([
+      'check',
+      '--path',
+      'test/stubs/lcov_complete.info',
+    ]);
+
+    expect(exitCode, ExitCode.usage.code);
+    final captured =
+        verify(() => console.writeErrorLine(captureAny())).captured;
+    final message = captured.first as String;
+    expect(message, contains('Mock invalid argument'));
   });
 }
