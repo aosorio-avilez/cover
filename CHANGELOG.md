@@ -1,3 +1,8 @@
+## 0.7.0
+
+- **Feat**: Added `--failures-only` (abbr: `-f`) flag to the `check` command to filter the report to show only files failing the coverage threshold.
+- **Feat**: Threshold-aware coloring in terminal reports, dynamically adjusting colors based on the user-provided `--min-coverage`.
+
 ## 0.6.0
 
 - **Feat**: Added `--baseline` (or `-b`) flag to `check` command for coverage regression detection against a reference LCOV file.
