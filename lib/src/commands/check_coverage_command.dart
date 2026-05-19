@@ -70,6 +70,7 @@ class CheckCoverageCommand extends Command<int> {
       final excludeGenerated = getExcludeGeneratedArgument();
       final showUncovered = getShowUncoveredArgument();
       final baselinePath = getBaselineArgument();
+      final failuresOnly = getFailuresOnlyArgument();
 
       final result = await _service.checkCoverage(
         filePath: filePath,
@@ -87,6 +88,7 @@ class CheckCoverageCommand extends Command<int> {
         excludeGenerated: excludeGenerated,
         displayFiles: displayFiles,
         showUncovered: showUncovered,
+        failuresOnly: failuresOnly,
       );
 
       final passedMinCoverage = result.coverage >= minCoverage;
@@ -96,7 +98,7 @@ class CheckCoverageCommand extends Command<int> {
       return passedMinCoverage && passedBaseline
           ? ExitCode.success.code
           : ExitCode.fail.code;
-    // ignore: avoid_catching_errors
+      // ignore: avoid_catching_errors
     } on ArgumentError catch (e) {
       return _handleError(
         e.message?.toString() ?? '',
@@ -134,6 +136,7 @@ class CheckCoverageCommand extends Command<int> {
     required bool excludeGenerated,
     required bool displayFiles,
     required bool showUncovered,
+    required bool failuresOnly,
   }) {
     final currentCoverage = result.coverage;
 
@@ -147,12 +150,21 @@ class CheckCoverageCommand extends Command<int> {
       );
       console.writeLine(jsonOutput);
     } else {
-      final color = currentCoverage.getCoverageColorAnsi();
+      final color =
+          currentCoverage.getCoverageColorAnsi(minCoverage: minCoverage);
 
       if (displayFiles) {
         final table = buildCoverageFileTable(showUncovered: showUncovered);
         for (final record in result.files) {
-          table.insertRow(record.toRow(showUncovered: showUncovered));
+          if (failuresOnly && record.coveragePercentage >= minCoverage) {
+            continue;
+          }
+          table.insertRow(
+            record.toRow(
+              showUncovered: showUncovered,
+              minCoverage: minCoverage,
+            ),
+          );
         }
 
         console.write(table);
@@ -281,5 +293,10 @@ class CheckCoverageCommand extends Command<int> {
 
   String? getBaselineArgument() {
     return globalResults?[baselineArgumentName] as String?;
+  }
+
+  bool getFailuresOnlyArgument() {
+    return globalResults?[failuresOnlyArgumentName] as bool? ??
+        defaultFailuresOnly;
   }
 }

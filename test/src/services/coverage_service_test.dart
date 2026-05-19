@@ -29,7 +29,10 @@ void main() {
       'checkCoverage throws FormatException when file extension is not .info',
       () async {
         await expectLater(
-          () => service.checkCoverage(filePath: 'test/stubs/invalid.lcov', minCoverage: 100),
+          () => service.checkCoverage(
+            filePath: 'test/stubs/invalid.lcov',
+            minCoverage: 100,
+          ),
           throwsA(
             isA<FormatException>().having(
               (e) => e.message,

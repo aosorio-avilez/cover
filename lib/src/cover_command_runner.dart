@@ -19,6 +19,10 @@ const versionFlag = 'version';
 const versionDescription = 'Print the current version.';
 const jsonFlag = 'json';
 const jsonDescription = 'Output the result in JSON format.';
+const failuresOnlyArgumentName = 'failures-only';
+const defaultFailuresOnly = false;
+const failuresOnlyHelp =
+    'Filter the report to show only files failing the coverage threshold.';
 
 class CoverCommandRunner extends CompletionCommandRunner<int> {
   CoverCommandRunner({Console? console, CoverageService? service})
@@ -75,6 +79,12 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
         baselineArgumentName,
         abbr: 'b',
         help: baselineHelp,
+      )
+      ..addFlag(
+        failuresOnlyArgumentName,
+        abbr: 'f',
+        help: failuresOnlyHelp,
+        negatable: false,
       );
 
     addCommand(CheckCoverageCommand(_console, service: coverageService));
