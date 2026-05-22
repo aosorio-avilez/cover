@@ -1,3 +1,7 @@
+## 0.7.1
+
+- **Perf**: Refactored `getVersion` in `CoverCommandRunner` to use asynchronous I/O and improved robustness with file type validation.
+
 ## 0.7.0
 
 - **Feat**: Added `--failures-only` (abbr: `-f`) flag to the `check` command to filter the report to show only files failing the coverage threshold.
