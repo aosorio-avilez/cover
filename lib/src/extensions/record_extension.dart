@@ -92,6 +92,31 @@ extension RecordExtension on Record {
 
     return row;
   }
+
+  List<String> toMarkdownRow({
+    bool showUncovered = false,
+    double minCoverage = 100.0,
+  }) {
+    final percentage = coveragePercentage;
+    final emoji = percentage.getCoverageEmoji(minCoverage: minCoverage);
+    final lines = this.lines;
+    final fileName = file ?? 'null';
+    final sanitizedFile = fileName.sanitize();
+
+    final row = [
+      emoji,
+      sanitizedFile,
+      '${lines?.found ?? 0}',
+      '${lines?.hit ?? 0}',
+      '$percentage%',
+    ];
+
+    if (showUncovered) {
+      row.add(_formatUncoveredLines(uncoveredLines));
+    }
+
+    return row;
+  }
 }
 
 extension RecordListExtension on List<Record> {

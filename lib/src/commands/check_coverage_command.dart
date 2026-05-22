@@ -63,6 +63,7 @@ class CheckCoverageCommand extends Command<int> {
     final isJson = getJsonArgument();
 
     try {
+      final isMarkdown = getMarkdownArgument();
       final filePath = getPathArgument();
       final minCoverage = getMinCoverageArgument();
       final displayFiles = getDisplayFilesArgument();
@@ -83,6 +84,7 @@ class CheckCoverageCommand extends Command<int> {
       _displayResult(
         result,
         isJson: isJson,
+        isMarkdown: isMarkdown,
         minCoverage: minCoverage,
         excludePaths: excludePaths,
         excludeGenerated: excludeGenerated,
@@ -131,6 +133,7 @@ class CheckCoverageCommand extends Command<int> {
   void _displayResult(
     CoverageResult result, {
     required bool isJson,
+    required bool isMarkdown,
     required double minCoverage,
     required List<String> excludePaths,
     required bool excludeGenerated,
@@ -149,6 +152,14 @@ class CheckCoverageCommand extends Command<int> {
         ),
       );
       console.writeLine(jsonOutput);
+    } else if (isMarkdown) {
+      _displayMarkdownResult(
+        result,
+        minCoverage: minCoverage,
+        displayFiles: displayFiles,
+        showUncovered: showUncovered,
+        failuresOnly: failuresOnly,
+      );
     } else {
       final color =
           currentCoverage.getCoverageColorAnsi(minCoverage: minCoverage);
@@ -191,6 +202,74 @@ class CheckCoverageCommand extends Command<int> {
       } else {
         console.writeLine('Current coverage: $color$currentCoverage%\x1B[0m');
       }
+    }
+  }
+
+  void _displayMarkdownResult(
+    CoverageResult result, {
+    required double minCoverage,
+    required bool displayFiles,
+    required bool showUncovered,
+    required bool failuresOnly,
+  }) {
+    final currentCoverage = result.coverage;
+    final emoji = currentCoverage.getCoverageEmoji(minCoverage: minCoverage);
+    final progressBar = currentCoverage.getProgressBar(minCoverage: minCoverage);
+
+    console
+      ..writeLine('# $emoji Coverage Report')
+      ..writeLine()
+      ..writeLine('## Summary')
+      ..writeLine()
+      ..writeLine('- **Total Coverage:** $currentCoverage%')
+      ..writeLine('- **Progress:** `$progressBar`')
+      ..writeLine('- **Minimum Required:** $minCoverage%')
+      ..writeLine();
+
+    if (result.baselineCoverage != null) {
+      final baseline = result.baselineCoverage!;
+      final delta = (currentCoverage - baseline).roundToDoubleWithPrecision(2);
+      final deltaPrefix = delta >= 0 ? '+' : '';
+
+      console
+        ..writeLine('## Comparison')
+        ..writeLine()
+        ..writeLine('- **Baseline:** $baseline%')
+        ..writeLine('- **Delta:** $deltaPrefix$delta%')
+        ..writeLine();
+    }
+
+    if (displayFiles) {
+      console
+        ..writeLine('## Files')
+        ..writeLine();
+
+      final headers = [
+        'Status',
+        'File name',
+        'Found Lines',
+        'Hit Lines',
+        'Coverage',
+      ];
+      if (showUncovered) {
+        headers.add('Uncovered Lines');
+      }
+
+      console
+        ..writeLine('| ${headers.join(' | ')} |')
+        ..writeLine('| ${headers.map((_) => '---').join(' | ')} |');
+
+      for (final record in result.files) {
+        if (failuresOnly && record.coveragePercentage >= minCoverage) {
+          continue;
+        }
+        final row = record.toMarkdownRow(
+          showUncovered: showUncovered,
+          minCoverage: minCoverage,
+        );
+        console.writeLine('| ${row.join(' | ')} |');
+      }
+      console.writeLine();
     }
   }
 
@@ -284,6 +363,10 @@ class CheckCoverageCommand extends Command<int> {
 
   bool getJsonArgument() {
     return globalResults?[jsonFlag] as bool? ?? false;
+  }
+
+  bool getMarkdownArgument() {
+    return globalResults?[markdownFlag] as bool? ?? false;
   }
 
   bool getShowUncoveredArgument() {
