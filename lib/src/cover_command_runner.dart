@@ -19,6 +19,8 @@ const versionFlag = 'version';
 const versionDescription = 'Print the current version.';
 const jsonFlag = 'json';
 const jsonDescription = 'Output the result in JSON format.';
+const markdownFlag = 'markdown';
+const markdownDescription = 'Output the result in Markdown format.';
 const failuresOnlyArgumentName = 'failures-only';
 const defaultFailuresOnly = false;
 const failuresOnlyHelp =
@@ -41,6 +43,12 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
         abbr: 'j',
         negatable: false,
         help: jsonDescription,
+      )
+      ..addFlag(
+        markdownFlag,
+        abbr: 'k',
+        negatable: false,
+        help: markdownDescription,
       )
       ..addFlag(
         displayFilesArgumentName,

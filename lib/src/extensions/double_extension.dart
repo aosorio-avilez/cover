@@ -24,4 +24,28 @@ extension DoubleExtension on double {
     }
     return redColor;
   }
+
+  String getCoverageEmoji({double minCoverage = 100.0}) {
+    if (this >= minCoverage) {
+      return '🟢';
+    }
+    if (this >= minCoverage * 0.8) {
+      return '🟡';
+    }
+    return '🔴';
+  }
+
+  String getProgressBar({double minCoverage = 100.0}) {
+    final emoji = getCoverageEmoji(minCoverage: minCoverage);
+    final coloredBlock = switch (emoji) {
+      '🟢' => '🟩',
+      '🟡' => '🟨',
+      '🔴' || _ => '🟥',
+    };
+
+    final filledCount = (this / 10).clamp(0, 10).floor();
+    final emptyCount = 10 - filledCount;
+
+    return (coloredBlock * filledCount) + ('⬜' * emptyCount);
+  }
 }
