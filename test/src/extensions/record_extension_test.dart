@@ -152,7 +152,9 @@ void main() {
       await file.delete();
     });
 
-    test('toMarkdownRow returns a list of 5 or 6 strings correctly formatted with emojis', () async {
+    test(
+        'toMarkdownRow returns a list of 5 or 6 strings correctly formatted with emojis',
+        () async {
       final file = File('test_markdown.info');
       await file.writeAsString(
         'SF:test.dart\nDA:1,0\nDA:2,1\nLF:2\nLH:1\nend_of_record',
@@ -163,14 +165,14 @@ void main() {
 
       // Without showUncovered, 100% threshold
       // 50% coverage -> 🔴 emoji
-      final row = record.toMarkdownRow(minCoverage: 100.0);
+      final row = record.toMarkdownRow();
       expect(row.length, 5);
       expect(row[0], '🔴');
       expect(row[1], 'test.dart');
       expect(row[4], '50.0%');
 
       // With showUncovered
-      final rowWithUncovered = record.toMarkdownRow(showUncovered: true, minCoverage: 100.0);
+      final rowWithUncovered = record.toMarkdownRow(showUncovered: true);
       expect(rowWithUncovered.length, 6);
       expect(rowWithUncovered[5], '1');
 
