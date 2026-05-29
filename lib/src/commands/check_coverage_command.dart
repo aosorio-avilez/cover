@@ -42,6 +42,10 @@ const showUncoveredHelp = 'Display uncovered line numbers';
 const baselineArgumentName = 'baseline';
 const baselineHelp = 'Specify a baseline coverage file to compare with.';
 
+const githubAnnotationsArgumentName = githubAnnotationsFlag;
+const defaultGithubAnnotations = false;
+const githubAnnotationsHelp = githubAnnotationsDescription;
+
 const commandDescription = 'Check code coverage';
 const commandName = 'check';
 
@@ -81,10 +85,13 @@ class CheckCoverageCommand extends Command<int> {
         baselinePath: baselinePath,
       );
 
+      final githubAnnotations = getGitHubAnnotationsArgument();
+
       _displayResult(
         result,
         isJson: isJson,
         isMarkdown: isMarkdown,
+        githubAnnotations: githubAnnotations,
         minCoverage: minCoverage,
         excludePaths: excludePaths,
         excludeGenerated: excludeGenerated,
@@ -134,6 +141,7 @@ class CheckCoverageCommand extends Command<int> {
     CoverageResult result, {
     required bool isJson,
     required bool isMarkdown,
+    required bool githubAnnotations,
     required double minCoverage,
     required List<String> excludePaths,
     required bool excludeGenerated,
@@ -153,6 +161,14 @@ class CheckCoverageCommand extends Command<int> {
         ),
       );
       console.writeLine(jsonOutput);
+    } else if (githubAnnotations) {
+      for (final record in result.files) {
+        final annotations =
+            record.toGitHubAnnotations(minCoverage: minCoverage);
+        for (final annotation in annotations) {
+          console.writeLine(annotation);
+        }
+      }
     } else if (isMarkdown) {
       _displayMarkdownResult(
         result,
@@ -382,6 +398,11 @@ class CheckCoverageCommand extends Command<int> {
   bool getShowUncoveredArgument() {
     return globalResults?[showUncoveredArgumentName] as bool? ??
         defaultShowUncovered;
+  }
+
+  bool getGitHubAnnotationsArgument() {
+    return globalResults?[githubAnnotationsArgumentName] as bool? ??
+        defaultGithubAnnotations;
   }
 
   String? getBaselineArgument() {
