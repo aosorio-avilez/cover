@@ -93,7 +93,7 @@ extension RecordExtension on Record {
     return row;
   }
 
-  List<String> toMarkdownRow({
+  String toMarkdownRow({
     bool showUncovered = false,
     double minCoverage = 100.0,
   }) {
@@ -101,21 +101,27 @@ extension RecordExtension on Record {
     final emoji = percentage.getCoverageEmoji(minCoverage: minCoverage);
     final lines = this.lines;
     final fileName = file ?? 'null';
-    final sanitizedFile = fileName.sanitize();
+    final sanitizedFile = fileName.sanitize().replaceAll('|', r'\|');
 
-    final row = [
-      emoji,
-      sanitizedFile,
-      '${lines?.found ?? 0}',
-      '${lines?.hit ?? 0}',
-      '$percentage%',
-    ];
+    final buffer = StringBuffer()
+      ..write(emoji)
+      ..write(' | ')
+      ..write(sanitizedFile)
+      ..write(' | ')
+      ..write(lines?.found ?? 0)
+      ..write(' | ')
+      ..write(lines?.hit ?? 0)
+      ..write(' | ')
+      ..write(percentage)
+      ..write('%');
 
     if (showUncovered) {
-      row.add(_formatUncoveredLines(uncoveredLines));
+      buffer
+        ..write(' | ')
+        ..write(_formatUncoveredLines(uncoveredLines));
     }
 
-    return row;
+    return buffer.toString();
   }
 }
 

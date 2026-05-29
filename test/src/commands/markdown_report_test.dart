@@ -30,7 +30,7 @@ void main() {
 
       expect(exitCode, ExitCode.fail.code);
 
-      final captured = verify(() => console.writeLine(captureAny())).captured;
+      final captured = verify(() => console.write(captureAny())).captured;
       final output = captured.join('\n');
 
       expect(output, contains('# 🟡 Coverage Report'));
@@ -54,7 +54,7 @@ void main() {
 
       expect(exitCode, ExitCode.fail.code);
 
-      final captured = verify(() => console.writeLine(captureAny())).captured;
+      final captured = verify(() => console.write(captureAny())).captured;
       final output = captured.join('\n');
 
       expect(output, contains('| Status | File name | Found Lines | Hit Lines | Coverage | Uncovered Lines |'));
@@ -75,7 +75,7 @@ void main() {
 
       expect(exitCode, ExitCode.success.code);
 
-      final captured = verify(() => console.writeLine(captureAny())).captured;
+      final captured = verify(() => console.write(captureAny())).captured;
       final output = captured.join('\n');
 
       // lib/src/api/auth_api_impl.dart (87.5%) should be included as it's below 90%
@@ -98,7 +98,7 @@ void main() {
 
       expect(exitCode, ExitCode.fail.code);
 
-      final captured = verify(() => console.writeLine(captureAny())).captured;
+      final captured = verify(() => console.write(captureAny())).captured;
       final output = captured.join('\n');
 
       expect(output, contains('## Comparison'));

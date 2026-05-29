@@ -149,6 +149,7 @@ class CheckCoverageCommand extends Command<int> {
           minCoverage: minCoverage,
           excludePaths: excludePaths,
           excludeGenerated: excludeGenerated,
+          failuresOnly: failuresOnly,
         ),
       );
       console.writeLine(jsonOutput);
@@ -214,35 +215,36 @@ class CheckCoverageCommand extends Command<int> {
   }) {
     final currentCoverage = result.coverage;
     final emoji = currentCoverage.getCoverageEmoji(minCoverage: minCoverage);
-    final progressBar = currentCoverage.getProgressBar(minCoverage: minCoverage);
+    final progressBar =
+        currentCoverage.getProgressBar(minCoverage: minCoverage);
 
-    console
-      ..writeLine('# $emoji Coverage Report')
-      ..writeLine()
-      ..writeLine('## Summary')
-      ..writeLine()
-      ..writeLine('- **Total Coverage:** $currentCoverage%')
-      ..writeLine('- **Progress:** `$progressBar`')
-      ..writeLine('- **Minimum Required:** $minCoverage%')
-      ..writeLine();
+    final buffer = StringBuffer()
+      ..writeln('# $emoji Coverage Report')
+      ..writeln()
+      ..writeln('## Summary')
+      ..writeln()
+      ..writeln('- **Total Coverage:** $currentCoverage%')
+      ..writeln('- **Progress:** `$progressBar`')
+      ..writeln('- **Minimum Required:** $minCoverage%')
+      ..writeln();
 
     if (result.baselineCoverage != null) {
       final baseline = result.baselineCoverage!;
       final delta = (currentCoverage - baseline).roundToDoubleWithPrecision(2);
       final deltaPrefix = delta >= 0 ? '+' : '';
 
-      console
-        ..writeLine('## Comparison')
-        ..writeLine()
-        ..writeLine('- **Baseline:** $baseline%')
-        ..writeLine('- **Delta:** $deltaPrefix$delta%')
-        ..writeLine();
+      buffer
+        ..writeln('## Comparison')
+        ..writeln()
+        ..writeln('- **Baseline:** $baseline%')
+        ..writeln('- **Delta:** $deltaPrefix$delta%')
+        ..writeln();
     }
 
     if (displayFiles) {
-      console
-        ..writeLine('## Files')
-        ..writeLine();
+      buffer
+        ..writeln('## Files')
+        ..writeln();
 
       final headers = [
         'Status',
@@ -255,9 +257,9 @@ class CheckCoverageCommand extends Command<int> {
         headers.add('Uncovered Lines');
       }
 
-      console
-        ..writeLine('| ${headers.join(' | ')} |')
-        ..writeLine('| ${headers.map((_) => '---').join(' | ')} |');
+      buffer
+        ..writeln('| ${headers.join(' | ')} |')
+        ..writeln('| ${headers.map((_) => '---').join(' | ')} |');
 
       for (final record in result.files) {
         if (failuresOnly && record.coveragePercentage >= minCoverage) {
@@ -267,10 +269,12 @@ class CheckCoverageCommand extends Command<int> {
           showUncovered: showUncovered,
           minCoverage: minCoverage,
         );
-        console.writeLine('| ${row.join(' | ')} |');
+        buffer.writeln('| $row |');
       }
-      console.writeLine();
+      buffer.writeln();
     }
+
+    console.write(buffer.toString());
   }
 
   int _handleError(

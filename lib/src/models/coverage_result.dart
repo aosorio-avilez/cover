@@ -17,10 +17,15 @@ class CoverageResult {
     required double minCoverage,
     List<String> excludePaths = const [],
     bool excludeGenerated = false,
+    bool failuresOnly = false,
   }) {
     final delta = baselineCoverage != null
         ? (coverage - baselineCoverage!).roundToDoubleWithPrecision(2)
         : null;
+
+    final filteredFiles = failuresOnly
+        ? files.where((f) => f.coveragePercentage < minCoverage).toList()
+        : files;
 
     return {
       'coverage': coverage,
@@ -30,10 +35,11 @@ class CoverageResult {
       'passed': coverage >= minCoverage &&
           (baselineCoverage == null || coverage >= baselineCoverage!),
       'timestamp': DateTime.now().toIso8601String(),
-      'files_count': files.length,
+      'files_count': filteredFiles.length,
       'exclude_generated': excludeGenerated,
       'excluded_paths': excludePaths,
-      'files': files.map((file) => file.toJson()).toList(),
+      'failures_only': failuresOnly,
+      'files': filteredFiles.map((file) => file.toJson()).toList(),
     };
   }
 }
