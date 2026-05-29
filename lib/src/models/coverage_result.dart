@@ -17,10 +17,15 @@ class CoverageResult {
     required double minCoverage,
     List<String> excludePaths = const [],
     bool excludeGenerated = false,
+    bool failuresOnly = false,
   }) {
     final delta = baselineCoverage != null
         ? (coverage - baselineCoverage!).roundToDoubleWithPrecision(2)
         : null;
+
+    final filesToSerialize = failuresOnly
+        ? files.where((f) => f.coveragePercentage < minCoverage).toList()
+        : files;
 
     return {
       'coverage': coverage,
@@ -33,7 +38,7 @@ class CoverageResult {
       'files_count': files.length,
       'exclude_generated': excludeGenerated,
       'excluded_paths': excludePaths,
-      'files': files.map((file) => file.toJson()).toList(),
+      'files': filesToSerialize.map((file) => file.toJson()).toList(),
     };
   }
 }
