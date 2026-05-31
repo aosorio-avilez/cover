@@ -1,0 +1,12 @@
+{
+  "type": "CodeCoverage",
+  "coverage": [
+    {
+      "source": "package:cover/src/services/coverage_service.dart",
+      "hits": [
+        10, 1,
+        20, 0
+      ]
+    }
+  ]
+}

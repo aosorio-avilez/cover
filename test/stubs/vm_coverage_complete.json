@@ -1,0 +1,20 @@
+{
+  "type": "CodeCoverage",
+  "coverage": [
+    {
+      "source": "package:cover/src/services/coverage_service.dart",
+      "script": {
+        "type": "@Script",
+        "fixedId": true,
+        "id": "libraries/1/scripts/package%3Acover%2Fsrc%2Fservices%2Fcoverage_service.dart",
+        "uri": "package:cover/src/services/coverage_service.dart",
+        "_kind": "library"
+      },
+      "hits": [
+        10, 1,
+        20, 3,
+        30, 2
+      ]
+    }
+  ]
+}

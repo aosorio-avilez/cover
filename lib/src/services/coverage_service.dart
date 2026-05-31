@@ -1,9 +1,13 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cover/src/extensions/record_extension.dart';
 import 'package:cover/src/models/coverage_result.dart';
 import 'package:lcov_parser/lcov_parser.dart';
+// ignore: implementation_imports
+import 'package:lcov_parser/src/models/lines.dart';
 import 'package:path/path.dart' as path;
+import 'package:pubspec_parse/pubspec_parse.dart';
 
 class CoverageService {
   CoverageService({Directory? currentDirectory})
@@ -19,6 +23,25 @@ class CoverageService {
 
   final Directory _currentDirectory;
   Future<String>? _resolvedCurrentDirectoryPath;
+  String? _packageName;
+
+  Future<String> _getPackageName() async {
+    if (_packageName != null) return _packageName!;
+
+    try {
+      final pubspecFile =
+          File(path.join(_currentDirectory.path, 'pubspec.yaml'));
+      if (pubspecFile.existsSync()) {
+        final content = pubspecFile.readAsStringSync();
+        final pubspec = Pubspec.parse(content);
+        _packageName = pubspec.name;
+      }
+    } catch (_) {
+      // Fallback if pubspec.yaml can't be parsed
+    }
+    _packageName ??= 'unknown';
+    return _packageName!;
+  }
 
   Future<CoverageResult> checkCoverage({
     required String filePath,
@@ -64,36 +87,64 @@ class CoverageService {
       );
     }
 
-    if (!filePath.endsWith('.info')) {
-      throw const FormatException(
-        'Invalid file type. Expected a .info file.',
-      );
+    var targetPath = filePath;
+    final absolutePath = path.isAbsolute(targetPath)
+        ? targetPath
+        : path.join(_currentDirectory.path, targetPath);
+
+    if (path.basename(absolutePath) == 'lcov.info') {
+      final file = File(absolutePath);
+      if (!file.existsSync()) {
+        final parentDir = Directory(path.dirname(absolutePath));
+        if (parentDir.existsSync()) {
+          targetPath = path.dirname(targetPath);
+        }
+      }
     }
 
-    final resolvedPath = await _validatePath(filePath);
-
-    // Optimization: use FileStat.stat() to retrieve existence, type, and size
-    // in a single I/O operation (up to 2x faster than separate calls).
+    final resolvedPath = await _validatePath(targetPath);
     final stat = await FileStat.stat(resolvedPath);
-    if (stat.type == FileSystemEntityType.notFound ||
-        stat.type != FileSystemEntityType.file) {
+
+    if (stat.type == FileSystemEntityType.notFound) {
       throw PathNotFoundException(
         resolvedPath,
-        const OSError('File not found', 2),
+        const OSError('Path not found', 2),
       );
     }
 
-    if (stat.size == 0) {
-      throw const FormatException(
-        'File is empty or does not have the correct format',
-      );
-    }
+    List<Record> files;
 
-    final files = await _parseCoverageFile(
-      resolvedPath,
-      excludePaths,
-      excludeGenerated: excludeGenerated,
-    );
+    if (stat.type == FileSystemEntityType.directory) {
+      files = await _parseDirectory(
+        Directory(resolvedPath),
+        excludePaths,
+        excludeGenerated: excludeGenerated,
+      );
+    } else {
+      if (stat.size == 0) {
+        throw const FormatException(
+          'File is empty or does not have the correct format',
+        );
+      }
+
+      if (resolvedPath.endsWith('.json')) {
+        files = await _parseJsonCoverage(
+          File(resolvedPath),
+          excludePaths,
+          excludeGenerated: excludeGenerated,
+        );
+      } else if (resolvedPath.endsWith('.info')) {
+        files = await _parseCoverageFile(
+          resolvedPath,
+          excludePaths,
+          excludeGenerated: excludeGenerated,
+        );
+      } else {
+        throw const FormatException(
+          'Unsupported file format. Expected .info or .json file.',
+        );
+      }
+    }
 
     if (files.isEmpty && !excludeGenerated && excludePaths.isEmpty) {
       throw const FormatException(
@@ -102,6 +153,220 @@ class CoverageService {
     }
 
     return files;
+  }
+
+  Future<List<Record>> _parseJsonCoverage(
+    File file,
+    List<String> excludedPaths, {
+    bool excludeGenerated = false,
+  }) async {
+    final packageName = await _getPackageName();
+    final mergedHits = <String, Map<int, int>>{};
+
+    try {
+      await _parseJsonCoverageFile(file, packageName, mergedHits);
+    } catch (e) {
+      throw FormatException('Failed to parse coverage file: $e');
+    }
+
+    final files =
+        mergedHits.entries.map((e) => _createRecord(e.key, e.value)).toList();
+
+    return _filterRecords(
+      files,
+      excludedPaths,
+      excludeGenerated: excludeGenerated,
+    );
+  }
+
+  Future<List<Record>> _parseDirectory(
+    Directory directory,
+    List<String> excludedPaths, {
+    bool excludeGenerated = false,
+  }) async {
+    final filesList = <File>[];
+    await for (final entity
+        in directory.list(recursive: true, followLinks: false)) {
+      if (entity is File) {
+        filesList.add(entity);
+      }
+    }
+
+    final jsonFiles = filesList.where((f) => f.path.endsWith('.json')).toList();
+    if (jsonFiles.isNotEmpty) {
+      final packageName = await _getPackageName();
+      final mergedHits = <String, Map<int, int>>{};
+
+      for (final jsonFile in jsonFiles) {
+        try {
+          await _parseJsonCoverageFile(jsonFile, packageName, mergedHits);
+        } catch (_) {
+          rethrow;
+        }
+      }
+
+      final files =
+          mergedHits.entries.map((e) => _createRecord(e.key, e.value)).toList();
+
+      return _filterRecords(
+        files,
+        excludedPaths,
+        excludeGenerated: excludeGenerated,
+      );
+    }
+
+    final infoFiles = filesList.where((f) => f.path.endsWith('.info')).toList();
+    if (infoFiles.isNotEmpty) {
+      final recordsLists = <List<Record>>[];
+      for (final infoFile in infoFiles) {
+        try {
+          final records = await _parseCoverageFile(
+            infoFile.path,
+            excludedPaths,
+            excludeGenerated: excludeGenerated,
+          );
+          recordsLists.add(records);
+        } catch (_) {
+          rethrow;
+        }
+      }
+      return _mergeRecords(recordsLists);
+    }
+
+    throw FormatException(
+      'No coverage files found in directory: ${directory.path}',
+    );
+  }
+
+  List<Record> _mergeRecords(List<List<Record>> recordsLists) {
+    final merged = <String, Record>{};
+    for (final list in recordsLists) {
+      for (final record in list) {
+        final file = record.file;
+        if (file == null) continue;
+        if (!merged.containsKey(file)) {
+          merged[file] = record;
+        } else {
+          final existing = merged[file]!;
+          final existingDetails = existing.lines?.details ?? [];
+          final incomingDetails = record.lines?.details ?? [];
+          final lineHits = <int, int>{};
+          for (final d in existingDetails) {
+            if (d.line != null) {
+              lineHits[d.line!] = (lineHits[d.line!] ?? 0) + (d.hit ?? 0);
+            }
+          }
+          for (final d in incomingDetails) {
+            if (d.line != null) {
+              lineHits[d.line!] = (lineHits[d.line!] ?? 0) + (d.hit ?? 0);
+            }
+          }
+          merged[file] = _createRecord(file, lineHits);
+        }
+      }
+    }
+    return merged.values.toList();
+  }
+
+  Future<void> _parseJsonCoverageFile(
+    File file,
+    String packageName,
+    Map<String, Map<int, int>> mergedHits,
+  ) async {
+    final content = await file.readAsString();
+    if (content.trim().isEmpty) return;
+
+    final decoded = jsonDecode(content);
+    if (decoded is! Map<String, dynamic>) return;
+
+    final coverage = decoded['coverage'];
+    if (coverage is! List) return;
+
+    for (final entry in coverage) {
+      if (entry is! Map<String, dynamic>) continue;
+
+      final source = entry['source'] as String?;
+      if (source == null || source.isEmpty) continue;
+
+      final resolvedPath = await _resolveSourcePath(source, packageName);
+      if (resolvedPath == null) continue;
+
+      final hits = entry['hits'];
+      if (hits is! List) continue;
+
+      final lineHits = mergedHits.putIfAbsent(resolvedPath, () => <int, int>{});
+      final len = hits.length;
+      for (var i = 0; i < len - 1; i += 2) {
+        final line = hits[i];
+        final hit = hits[i + 1];
+        if (line is int && hit is int) {
+          lineHits[line] = (lineHits[line] ?? 0) + hit;
+        }
+      }
+    }
+  }
+
+  Future<String?> _resolveSourcePath(String source, String packageName) async {
+    final decodedSource = Uri.decodeComponent(source);
+
+    if (decodedSource.startsWith('package:')) {
+      final packagePrefix = 'package:$packageName/';
+      if (decodedSource.startsWith(packagePrefix)) {
+        final relativePath = decodedSource.substring(packagePrefix.length);
+        return path.join('lib', relativePath);
+      } else {
+        // Belongs to another package (dependency)
+        return null;
+      }
+    }
+
+    // Handle file URIs
+    if (decodedSource.startsWith('file://')) {
+      final uri = Uri.tryParse(decodedSource);
+      if (uri != null) {
+        final filePath = uri.toFilePath();
+        final relative = path.relative(filePath, from: _currentDirectory.path);
+        if (!relative.startsWith('..') && !path.isAbsolute(relative)) {
+          return relative;
+        }
+      }
+      return null;
+    }
+
+    // Handle relative/absolute paths
+    final absolutePath = path.isAbsolute(decodedSource)
+        ? decodedSource
+        : path.join(_currentDirectory.path, decodedSource);
+    final relative = path.relative(absolutePath, from: _currentDirectory.path);
+    if (!relative.startsWith('..') && !path.isAbsolute(relative)) {
+      return relative;
+    }
+
+    return null;
+  }
+
+  Record _createRecord(String resolvedPath, Map<int, int> lineHits) {
+    final details = <Lines>[];
+    var hitCount = 0;
+
+    final sortedLines = lineHits.keys.toList()..sort();
+
+    for (final line in sortedLines) {
+      final hit = lineHits[line]!;
+      if (hit > 0) {
+        hitCount++;
+      }
+      details.add(Lines(line: line, hit: hit));
+    }
+
+    return Record(
+      file: resolvedPath,
+      lines: LcovLinesDetails(
+        found: lineHits.length,
+        hit: hitCount,
+        details: details,
+      ),
+    );
   }
 
   Future<List<Record>> _parseCoverageFile(
@@ -120,8 +385,18 @@ class CoverageService {
       throw FormatException('Failed to parse coverage file: $e');
     }
 
-    // Optimization: Filter out empty strings to avoid matching all files and
-    // ensure correctness.
+    return _filterRecords(
+      files,
+      excludedPaths,
+      excludeGenerated: excludeGenerated,
+    );
+  }
+
+  List<Record> _filterRecords(
+    List<Record> files,
+    List<String> excludedPaths, {
+    bool excludeGenerated = false,
+  }) {
     final validExcludedPaths = excludedPaths.where((e) => e.isNotEmpty).toSet();
 
     if (validExcludedPaths.isEmpty && !excludeGenerated) {
@@ -133,9 +408,6 @@ class CoverageService {
     if (validExcludedPaths.isEmpty && excludeGenerated) {
       regExp = _generatedRegExp;
     } else {
-      // Optimization: Using a single RegExp with alternation is significantly
-      // faster than iterating through the list with String.contains for larger
-      // sets of excluded paths.
       final patterns = validExcludedPaths.map(RegExp.escape).toList();
 
       if (excludeGenerated) {
@@ -145,8 +417,6 @@ class CoverageService {
       regExp = RegExp(patterns.join('|'), caseSensitive: false);
     }
 
-    // Note: `files` is a fresh list from `Parser.parse`, so we can mutate it
-    // safely.
     files.retainWhere((record) {
       final file = record.file ?? '';
       return !regExp.hasMatch(file);
@@ -168,8 +438,6 @@ class CoverageService {
 
     final canonicalPath = path.canonicalize(resolvedPath);
 
-    // Optimization: Cache the resolved symbolic link path of the current
-    // directory to avoid redundant asynchronous I/O operations.
     _resolvedCurrentDirectoryPath ??= _currentDirectory.resolveSymbolicLinks();
 
     String currentResolvedPath;

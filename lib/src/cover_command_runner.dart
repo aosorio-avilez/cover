@@ -120,8 +120,9 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
       printError(e.message, isJson: isJson);
       return ExitCode.usage.code;
     } on PathNotFoundException catch (e) {
+      final pathSuffix = (e.path != null && e.path!.isNotEmpty) ? ': ${e.path}' : '';
       printError(
-        e.osError?.message ?? e.message,
+        '${e.osError?.message ?? e.message}$pathSuffix',
         isJson: isJson,
         code: ExitCode.osFile,
       );
