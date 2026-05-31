@@ -32,7 +32,7 @@ void main() {
       () async {
         await expectLater(
           () => service.checkCoverage(
-            filePath: 'test/stubs/coverage/amber.png',
+            filePath: 'test/stubs/html_report_stub/amber.png',
             minCoverage: 100,
           ),
           throwsA(
@@ -380,7 +380,7 @@ void main() {
         () async {
       await expectLater(
         () => service.checkCoverage(
-          filePath: 'test/stubs/coverage',
+          filePath: 'test/stubs/html_report_stub',
           minCoverage: 0,
         ),
         throwsA(isA<FormatException>()),
