@@ -4,6 +4,10 @@ import 'dart:io';
 import 'package:cover/src/extensions/record_extension.dart';
 import 'package:cover/src/models/coverage_result.dart';
 import 'package:lcov_parser/lcov_parser.dart';
+// Lines and LcovLinesDetails are part of the effective public API
+// of lcov_parser (they are field types of the exported Record class)
+// but are not yet exported from lib/lcov_parser.dart.
+// Tracked at: https://github.com/eliasreis54/lcov_parser/issues/17
 // ignore: implementation_imports
 import 'package:lcov_parser/src/models/lines.dart';
 import 'package:path/path.dart' as path;
