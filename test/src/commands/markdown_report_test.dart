@@ -37,13 +37,23 @@ void main() {
       expect(output, contains('## Summary'));
       expect(output, contains('- **Total Coverage:** 94.52%'));
       expect(output, contains('- **Progress:** `'));
-      expect(output, contains('| Status | File name | Found Lines | Hit Lines | Coverage |'));
+      expect(
+          output,
+          contains(
+              '| Status | File name | Found Lines | Hit Lines | Coverage |'));
       expect(output, contains('| --- | --- | --- | --- | --- |'));
-      expect(output, contains('| 🟡 | lib/src/api/auth_api_impl.dart | 16 | 14 | 87.5% |'));
-      expect(output, contains('| 🟢 | lib/src/datasources/auth_data_source.dart | 47 | 47 | 100.0% |'));
+      expect(
+          output,
+          contains(
+              '| 🟡 | lib/src/api/auth_api_impl.dart | 16 | 14 | 87.5% |'));
+      expect(
+          output,
+          contains(
+              '| 🟢 | lib/src/datasources/auth_data_source.dart | 47 | 47 | 100.0% |'));
     });
 
-    test('verify markdown output with --markdown and --show-uncovered', () async {
+    test('verify markdown output with --markdown and --show-uncovered',
+        () async {
       final exitCode = await runner.run([
         'check',
         '--path',
@@ -57,12 +67,19 @@ void main() {
       final captured = verify(() => console.writeLine(captureAny())).captured;
       final output = captured.join('\n');
 
-      expect(output, contains('| Status | File name | Found Lines | Hit Lines | Coverage | Uncovered Lines |'));
+      expect(
+          output,
+          contains(
+              '| Status | File name | Found Lines | Hit Lines | Coverage | Uncovered Lines |'));
       expect(output, contains('| --- | --- | --- | --- | --- | --- |'));
-      expect(output, contains('| 🟡 | lib/src/api/auth_api_impl.dart | 16 | 14 | 87.5% | 20, 22 |'));
+      expect(
+          output,
+          contains(
+              '| 🟡 | lib/src/api/auth_api_impl.dart | 16 | 14 | 87.5% | 20, 22 |'));
     });
 
-    test('verify markdown output with --markdown and --failures-only', () async {
+    test('verify markdown output with --markdown and --failures-only',
+        () async {
       final exitCode = await runner.run([
         'check',
         '--path',
@@ -79,9 +96,13 @@ void main() {
       final output = captured.join('\n');
 
       // lib/src/api/auth_api_impl.dart (87.5%) should be included as it's below 90%
-      expect(output, contains('| 🟡 | lib/src/api/auth_api_impl.dart | 16 | 14 | 87.5% |'));
+      expect(
+          output,
+          contains(
+              '| 🟡 | lib/src/api/auth_api_impl.dart | 16 | 14 | 87.5% |'));
       // lib/src/datasources/auth_data_source.dart (100%) should be excluded
-      expect(output, isNot(contains('lib/src/datasources/auth_data_source.dart')));
+      expect(
+          output, isNot(contains('lib/src/datasources/auth_data_source.dart')));
     });
 
     test('verify markdown output with --markdown and --baseline', () async {

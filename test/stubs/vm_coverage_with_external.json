@@ -1,0 +1,24 @@
+{
+  "type": "CodeCoverage",
+  "coverage": [
+    {
+      "source": "package:cover/src/services/coverage_service.dart",
+      "script": {
+        "uri": "package:cover/src/services/coverage_service.dart"
+      },
+      "hits": [
+        10, 1
+      ]
+    },
+    {
+      "source": "package:args/args.dart",
+      "script": {
+        "uri": "package:args/args.dart"
+      },
+      "hits": [
+        5, 2,
+        6, 4
+      ]
+    }
+  ]
+}

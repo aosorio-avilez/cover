@@ -48,9 +48,7 @@ melos:
       description: Run unit tests for the root package and all sub-packages with tests.
 
     coverage:
-      run: |
-        dart test -j 8 --test-randomize-ordering-seed random --coverage=coverage
-        format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib
+      run: dart test -j 8 --test-randomize-ordering-seed random --coverage=coverage
       description: Run tests and generate LCOV report for the main cover package.
 
     check-coverage:
