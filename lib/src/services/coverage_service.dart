@@ -401,6 +401,21 @@ class CoverageService {
     List<String> excludedPaths, {
     bool excludeGenerated = false,
   }) {
+    files.retainWhere((record) {
+      final file = record.file;
+      if (file == null || file.isEmpty) return false;
+
+      final relativePath = path.isAbsolute(file)
+          ? path.relative(file, from: _currentDirectory.path)
+          : file;
+
+      final segments = path.split(relativePath);
+      if (segments.isNotEmpty && segments.first == 'test') {
+        return false;
+      }
+      return true;
+    });
+
     final validExcludedPaths = excludedPaths.where((e) => e.isNotEmpty).toSet();
 
     if (validExcludedPaths.isEmpty && !excludeGenerated) {

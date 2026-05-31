@@ -214,7 +214,8 @@ class CheckCoverageCommand extends Command<int> {
   }) {
     final currentCoverage = result.coverage;
     final emoji = currentCoverage.getCoverageEmoji(minCoverage: minCoverage);
-    final progressBar = currentCoverage.getProgressBar(minCoverage: minCoverage);
+    final progressBar =
+        currentCoverage.getProgressBar(minCoverage: minCoverage);
 
     console
       ..writeLine('# $emoji Coverage Report')

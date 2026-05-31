@@ -387,7 +387,9 @@ void main() {
       );
     });
 
-    test('checkCoverage falls back to directory when lcov.info path is not found but directory exists', () async {
+    test(
+        'checkCoverage falls back to directory when lcov.info path is not found but directory exists',
+        () async {
       final result = await service.checkCoverage(
         filePath: 'test/stubs/vm_coverage_directory/lcov.info',
         minCoverage: 0,
@@ -397,6 +399,52 @@ void main() {
       expect(result.files.length, 1);
       expect(result.files.first.lines?.found, 3);
       expect(result.files.first.lines?.hit, 3);
+    });
+
+    test('checkCoverage automatically excludes files in test/ directory',
+        () async {
+      final tempFile = File('test/stubs/vm_coverage_temp_test_excl.json');
+      final testFileUri = Uri.file(
+        path.join(
+          Directory.current.path,
+          'test/src/services/coverage_service_test.dart',
+        ),
+      ).toString();
+      const libFileRelative = 'lib/src/services/coverage_service.dart';
+
+      final jsonContent = '''
+{
+  "type": "CodeCoverage",
+  "coverage": [
+    {
+      "source": "$testFileUri",
+      "hits": [10, 1]
+    },
+    {
+      "source": "$libFileRelative",
+      "hits": [20, 1]
+    }
+  ]
+}
+''';
+
+      await tempFile.writeAsString(jsonContent);
+
+      try {
+        final result = await service.checkCoverage(
+          filePath: tempFile.path,
+          minCoverage: 0,
+        );
+
+        // The test file must be filtered out, only leaving the lib file.
+        expect(result.files.length, 1);
+        expect(
+            result.files.first.file, 'lib/src/services/coverage_service.dart');
+      } finally {
+        if (tempFile.existsSync()) {
+          await tempFile.delete();
+        }
+      }
     });
   });
 }
