@@ -4,7 +4,10 @@
 - **Feat**: Seamless multi-file merging when pointing `--path` to a directory (applies to both `.json` and `.info` files).
 - **Feat**: Automatic URI-to-path resolution for `package:` and `file://` sources in JSON coverage reports using dynamic `pubspec.yaml` package name matching.
 - **Feat**: Added `--failures-only` (abbr: `-f`) flag to the `check` command to filter the report to show only files failing the coverage threshold.
+- **Feat**: Added `--markdown` flag to the `check` command to generate emoji-rich, markdown-formatted reports suitable for PR comments.
 - **Feat**: Threshold-aware coloring in terminal reports, dynamically adjusting colors based on the user-provided `--min-coverage`.
+- **Refactor**: Enhanced CLI resilience and stability with improved input validation and graceful error handling.
+- **Perf**: Optimized character scanning in output sanitization with a fast-path for printable ASCII characters.
 
 ## 0.6.0
 
