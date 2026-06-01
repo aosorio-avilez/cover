@@ -439,7 +439,9 @@ void main() {
         // The test file must be filtered out, only leaving the lib file.
         expect(result.files.length, 1);
         expect(
-            result.files.first.file, 'lib/src/services/coverage_service.dart');
+          result.files.first.file,
+          'lib/src/services/coverage_service.dart',
+        );
       } finally {
         if (tempFile.existsSync()) {
           await tempFile.delete();
