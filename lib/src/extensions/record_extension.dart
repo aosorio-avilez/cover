@@ -65,16 +65,21 @@ extension RecordExtension on Record {
     };
   }
 
-  List<Object> toRow({bool showUncovered = false, double minCoverage = 100.0}) {
-    final percentage = coveragePercentage;
-    final color = percentage.getCoverageColorAnsi(minCoverage: minCoverage);
+  List<Object> toRow({
+    bool showUncovered = false,
+    double minCoverage = 100.0,
+    double? percentage,
+  }) {
+    final currentPercentage = percentage ?? coveragePercentage;
+    final color =
+        currentPercentage.getCoverageColorAnsi(minCoverage: minCoverage);
     final lines = this.lines;
 
     // Optimization: Use a fast-path for 100% coverage by using the `green100`
     // constant (a pre-interpolated string from `DoubleExtension`), which
     // eliminates redundant string allocations and interpolations.
     final formattedPercentage =
-        percentage == 100 ? green100 : '$color$percentage%';
+        currentPercentage == 100 ? green100 : '$color$currentPercentage%';
 
     final fileName = file ?? 'null';
     final sanitizedFile = fileName.sanitize();
@@ -96,9 +101,10 @@ extension RecordExtension on Record {
   List<String> toMarkdownRow({
     bool showUncovered = false,
     double minCoverage = 100.0,
+    double? percentage,
   }) {
-    final percentage = coveragePercentage;
-    final emoji = percentage.getCoverageEmoji(minCoverage: minCoverage);
+    final currentPercentage = percentage ?? coveragePercentage;
+    final emoji = currentPercentage.getCoverageEmoji(minCoverage: minCoverage);
     final lines = this.lines;
     final fileName = file ?? 'null';
     final sanitizedFile = fileName.sanitize();
@@ -108,7 +114,7 @@ extension RecordExtension on Record {
       sanitizedFile,
       '${lines?.found ?? 0}',
       '${lines?.hit ?? 0}',
-      '$percentage%',
+      '$currentPercentage%',
     ];
 
     if (showUncovered) {
@@ -116,6 +122,46 @@ extension RecordExtension on Record {
     }
 
     return row;
+  }
+
+  List<String> toGitHubAnnotations({
+    required double minCoverage,
+    double? percentage,
+  }) {
+    final currentPercentage = percentage ?? coveragePercentage;
+    if (currentPercentage >= minCoverage) return [];
+
+    final lines = uncoveredLines;
+    if (lines.isEmpty) return [];
+
+    lines.sort();
+    final annotations = <String>[];
+    final fileName = file ?? 'null';
+    final sanitizedFile = fileName.sanitize();
+
+    var start = lines[0];
+    var end = lines[0];
+
+    final len = lines.length;
+    for (var i = 1; i < len; i++) {
+      final current = lines[i];
+      if (current == end + 1) {
+        end = current;
+      } else {
+        annotations.add(
+          '::warning file=$sanitizedFile,line=$start,endLine=$end::'
+          'Uncovered lines ${start == end ? start : "$start-$end"}',
+        );
+        start = current;
+        end = current;
+      }
+    }
+    annotations.add(
+      '::warning file=$sanitizedFile,line=$start,endLine=$end::'
+      'Uncovered lines ${start == end ? start : "$start-$end"}',
+    );
+
+    return annotations;
   }
 }
 

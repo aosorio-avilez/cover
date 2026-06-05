@@ -178,6 +178,56 @@ void main() {
 
       await file.delete();
     });
+
+    test('toGitHubAnnotations returns correct annotations for uncovered ranges',
+        () async {
+      final file = File('test_annotations.info');
+      await file.writeAsString(
+        'SF:test.dart\n'
+        'DA:1,0\n'
+        'DA:2,0\n'
+        'DA:3,0\n'
+        'DA:5,0\n'
+        'DA:7,1\n'
+        'LF:5\n'
+        'LH:1\n'
+        'end_of_record',
+      );
+
+      final records = await Parser.parse(file.path);
+      final record = records.first;
+
+      // Coverage is 1/5 = 20%
+      // With 100% threshold, it should return annotations
+      final annotations = record.toGitHubAnnotations(minCoverage: 100);
+
+      expect(annotations, [
+        '::warning file=test.dart,line=1,endLine=3::Uncovered lines 1-3',
+        '::warning file=test.dart,line=5,endLine=5::Uncovered lines 5',
+      ]);
+
+      await file.delete();
+    });
+
+    test('toGitHubAnnotations returns empty list if coverage meets threshold',
+        () async {
+      final file = File('test_annotations_passed.info');
+      await file.writeAsString(
+        'SF:test.dart\n'
+        'DA:1,1\n'
+        'LF:1\n'
+        'LH:1\n'
+        'end_of_record',
+      );
+
+      final records = await Parser.parse(file.path);
+      final record = records.first;
+
+      final annotations = record.toGitHubAnnotations(minCoverage: 100);
+      expect(annotations, isEmpty);
+
+      await file.delete();
+    });
   });
 
   group('RecordListExtension', () {

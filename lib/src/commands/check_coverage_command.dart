@@ -72,6 +72,7 @@ class CheckCoverageCommand extends Command<int> {
       final showUncovered = getShowUncoveredArgument();
       final baselinePath = getBaselineArgument();
       final failuresOnly = getFailuresOnlyArgument();
+      final githubAnnotations = getGithubAnnotationsArgument();
 
       final result = await _service.checkCoverage(
         filePath: filePath,
@@ -91,6 +92,7 @@ class CheckCoverageCommand extends Command<int> {
         displayFiles: displayFiles,
         showUncovered: showUncovered,
         failuresOnly: failuresOnly,
+        githubAnnotations: githubAnnotations,
       );
 
       final passedMinCoverage = result.coverage >= minCoverage;
@@ -140,6 +142,7 @@ class CheckCoverageCommand extends Command<int> {
     required bool displayFiles,
     required bool showUncovered,
     required bool failuresOnly,
+    required bool githubAnnotations,
   }) {
     final currentCoverage = result.coverage;
 
@@ -167,18 +170,31 @@ class CheckCoverageCommand extends Command<int> {
       if (displayFiles) {
         final table = buildCoverageFileTable(showUncovered: showUncovered);
         for (final record in result.files) {
-          if (failuresOnly && record.coveragePercentage >= minCoverage) {
+          final percentage = record.coveragePercentage;
+          if (failuresOnly && percentage >= minCoverage) {
             continue;
           }
           table.insertRow(
             record.toRow(
               showUncovered: showUncovered,
               minCoverage: minCoverage,
+              percentage: percentage,
             ),
           );
         }
 
         console.write(table);
+      }
+
+      if (githubAnnotations) {
+        for (final record in result.files) {
+          final annotations = record.toGitHubAnnotations(
+            minCoverage: minCoverage,
+          );
+          for (final annotation in annotations) {
+            console.writeLine(annotation);
+          }
+        }
       }
 
       console
@@ -261,12 +277,14 @@ class CheckCoverageCommand extends Command<int> {
         ..writeLine('| ${headers.map((_) => '---').join(' | ')} |');
 
       for (final record in result.files) {
-        if (failuresOnly && record.coveragePercentage >= minCoverage) {
+        final percentage = record.coveragePercentage;
+        if (failuresOnly && percentage >= minCoverage) {
           continue;
         }
         final row = record.toMarkdownRow(
           showUncovered: showUncovered,
           minCoverage: minCoverage,
+          percentage: percentage,
         );
         console.writeLine('| ${row.join(' | ')} |');
       }
@@ -382,5 +400,9 @@ class CheckCoverageCommand extends Command<int> {
   bool getFailuresOnlyArgument() {
     return globalResults?[failuresOnlyArgumentName] as bool? ??
         defaultFailuresOnly;
+  }
+
+  bool getGithubAnnotationsArgument() {
+    return globalResults?[githubAnnotationsFlag] as bool? ?? false;
   }
 }
