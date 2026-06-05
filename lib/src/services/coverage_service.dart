@@ -292,26 +292,39 @@ class CoverageService {
       final source = entry['source'] as String?;
       if (source == null || source.isEmpty) continue;
 
-      final resolvedPath = await _resolveSourcePath(source, packageName);
-      if (resolvedPath == null) continue;
+      try {
+        final resolvedPath = await _resolveSourcePath(source, packageName);
+        if (resolvedPath == null) continue;
 
-      final hits = entry['hits'];
-      if (hits is! List) continue;
+        final hits = entry['hits'];
+        if (hits is! List) continue;
 
-      final lineHits = mergedHits.putIfAbsent(resolvedPath, () => <int, int>{});
-      final len = hits.length;
-      for (var i = 0; i < len - 1; i += 2) {
-        final line = hits[i];
-        final hit = hits[i + 1];
-        if (line is int && hit is int) {
-          lineHits[line] = (lineHits[line] ?? 0) + hit;
+        final lineHits =
+            mergedHits.putIfAbsent(resolvedPath, () => <int, int>{});
+        final len = hits.length;
+        for (var i = 0; i < len - 1; i += 2) {
+          final line = hits[i];
+          final hit = hits[i + 1];
+          if (line is int && hit is int) {
+            lineHits[line] = (lineHits[line] ?? 0) + hit;
+          }
         }
+      } catch (_) {
+        // Sentinel: Gracefully skip entries that fail resolution
+        // (e.g., malformed URIs) to ensure tool resilience and prevent crashes.
+        continue;
       }
     }
   }
 
   Future<String?> _resolveSourcePath(String source, String packageName) async {
-    final decodedSource = Uri.decodeComponent(source);
+    final String decodedSource;
+    try {
+      decodedSource = Uri.decodeComponent(source);
+    } catch (_) {
+      // Sentinel: Skip invalid percent-encoding to prevent ArgumentError.
+      return null;
+    }
 
     if (decodedSource.startsWith('package:')) {
       final packagePrefix = 'package:$packageName/';
@@ -328,10 +341,17 @@ class CoverageService {
     if (decodedSource.startsWith('file://')) {
       final uri = Uri.tryParse(decodedSource);
       if (uri != null) {
-        final filePath = uri.toFilePath();
-        final relative = path.relative(filePath, from: _currentDirectory.path);
-        if (!relative.startsWith('..') && !path.isAbsolute(relative)) {
-          return relative;
+        try {
+          final filePath = uri.toFilePath();
+          final relative =
+              path.relative(filePath, from: _currentDirectory.path);
+          if (!relative.startsWith('..') && !path.isAbsolute(relative)) {
+            return relative;
+          }
+        } catch (_) {
+          // Sentinel: Skip cross-device paths or invalid URIs to prevent
+          // unhandled exceptions during JSON coverage processing.
+          return null;
         }
       }
       return null;
@@ -341,9 +361,16 @@ class CoverageService {
     final absolutePath = path.isAbsolute(decodedSource)
         ? decodedSource
         : path.join(_currentDirectory.path, decodedSource);
-    final relative = path.relative(absolutePath, from: _currentDirectory.path);
-    if (!relative.startsWith('..') && !path.isAbsolute(relative)) {
-      return relative;
+    try {
+      final relative =
+          path.relative(absolutePath, from: _currentDirectory.path);
+      if (!relative.startsWith('..') && !path.isAbsolute(relative)) {
+        return relative;
+      }
+    } catch (_) {
+      // Sentinel: Prevent crashes if absolute path cannot be made relative
+      // (e.g., different drive letters on Windows).
+      return null;
     }
 
     return null;
@@ -405,11 +432,25 @@ class CoverageService {
       final file = record.file;
       if (file == null || file.isEmpty) return false;
 
-      final relativePath = path.isAbsolute(file)
-          ? path.relative(file, from: _currentDirectory.path)
-          : file;
+      String relativePath;
+      try {
+        relativePath = path.isAbsolute(file)
+            ? path.relative(file, from: _currentDirectory.path)
+            : file;
+      } catch (_) {
+        // Sentinel: If path cannot be made relative, keep the original path
+        // for later processing or filtering.
+        relativePath = file;
+      }
 
-      final segments = path.split(relativePath);
+      final normalizedPath = path.normalize(relativePath);
+
+      // Sentinel Security: Skip records that point outside the working directory.
+      if (normalizedPath.startsWith('..')) {
+        return false;
+      }
+
+      final segments = path.split(normalizedPath);
       if (segments.isNotEmpty && segments.first == 'test') {
         return false;
       }

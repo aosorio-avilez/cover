@@ -53,7 +53,7 @@ void main() {
 
         try {
           await insideFile.writeAsString(
-            'TN:\nSF:/path/to/file\nDA:1,1\nLF:1\nLH:1\nend_of_record',
+            'TN:\nSF:lib/file.dart\nDA:1,1\nLF:1\nLH:1\nend_of_record',
           );
 
           final service = CoverageService(currentDirectory: tempDir);
@@ -120,7 +120,7 @@ void main() {
         );
         final realFile = File('${tempDir.path}/real.info');
         await realFile.writeAsString(
-          'TN:\nSF:/path/to/file\nDA:1,1\nLF:1\nLH:1\nend_of_record',
+          'TN:\nSF:lib/file.dart\nDA:1,1\nLF:1\nLH:1\nend_of_record',
         );
 
         final linkPath = path.join(tempDir.path, 'link.info');
