@@ -167,13 +167,15 @@ class CheckCoverageCommand extends Command<int> {
       if (displayFiles) {
         final table = buildCoverageFileTable(showUncovered: showUncovered);
         for (final record in result.files) {
-          if (failuresOnly && record.coveragePercentage >= minCoverage) {
+          final percentage = record.coveragePercentage;
+          if (failuresOnly && percentage >= minCoverage) {
             continue;
           }
           table.insertRow(
             record.toRow(
               showUncovered: showUncovered,
               minCoverage: minCoverage,
+              percentage: percentage,
             ),
           );
         }
@@ -261,12 +263,14 @@ class CheckCoverageCommand extends Command<int> {
         ..writeLine('| ${headers.map((_) => '---').join(' | ')} |');
 
       for (final record in result.files) {
-        if (failuresOnly && record.coveragePercentage >= minCoverage) {
+        final percentage = record.coveragePercentage;
+        if (failuresOnly && percentage >= minCoverage) {
           continue;
         }
         final row = record.toMarkdownRow(
           showUncovered: showUncovered,
           minCoverage: minCoverage,
+          percentage: percentage,
         );
         console.writeLine('| ${row.join(' | ')} |');
       }

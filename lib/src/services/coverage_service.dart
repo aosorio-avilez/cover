@@ -401,45 +401,43 @@ class CoverageService {
     List<String> excludedPaths, {
     bool excludeGenerated = false,
   }) {
+    final currentPath = _currentDirectory.path;
+    final validExcludedPaths = excludedPaths.where((e) => e.isNotEmpty).toSet();
+
+    RegExp? regExp;
+    if (validExcludedPaths.isNotEmpty || excludeGenerated) {
+      if (validExcludedPaths.isEmpty && excludeGenerated) {
+        regExp = _generatedRegExp;
+      } else {
+        final patterns = validExcludedPaths.map(RegExp.escape).toList();
+        if (excludeGenerated) {
+          patterns.add(_generatedPattern);
+        }
+        regExp = RegExp(patterns.join('|'), caseSensitive: false);
+      }
+    }
+
     files.retainWhere((record) {
       final file = record.file;
       if (file == null || file.isEmpty) return false;
 
-      final relativePath = path.isAbsolute(file)
-          ? path.relative(file, from: _currentDirectory.path)
-          : file;
+      // 1. Exclude test files
+      final relativePath =
+          path.isAbsolute(file) ? path.relative(file, from: currentPath) : file;
 
-      final segments = path.split(relativePath);
-      if (segments.isNotEmpty && segments.first == 'test') {
+      if (relativePath.startsWith('test${path.separator}') ||
+          relativePath == 'test') {
         return false;
       }
+
+      // 2. Exclude paths and generated files
+      if (regExp != null && regExp.hasMatch(file)) {
+        return false;
+      }
+
       return true;
     });
 
-    final validExcludedPaths = excludedPaths.where((e) => e.isNotEmpty).toSet();
-
-    if (validExcludedPaths.isEmpty && !excludeGenerated) {
-      return files;
-    }
-
-    RegExp regExp;
-
-    if (validExcludedPaths.isEmpty && excludeGenerated) {
-      regExp = _generatedRegExp;
-    } else {
-      final patterns = validExcludedPaths.map(RegExp.escape).toList();
-
-      if (excludeGenerated) {
-        patterns.add(_generatedPattern);
-      }
-
-      regExp = RegExp(patterns.join('|'), caseSensitive: false);
-    }
-
-    files.retainWhere((record) {
-      final file = record.file ?? '';
-      return !regExp.hasMatch(file);
-    });
     return files;
   }
 

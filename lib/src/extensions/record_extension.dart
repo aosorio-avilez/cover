@@ -65,16 +65,21 @@ extension RecordExtension on Record {
     };
   }
 
-  List<Object> toRow({bool showUncovered = false, double minCoverage = 100.0}) {
-    final percentage = coveragePercentage;
-    final color = percentage.getCoverageColorAnsi(minCoverage: minCoverage);
+  List<Object> toRow({
+    bool showUncovered = false,
+    double minCoverage = 100.0,
+    double? percentage,
+  }) {
+    final effectivePercentage = percentage ?? coveragePercentage;
+    final color =
+        effectivePercentage.getCoverageColorAnsi(minCoverage: minCoverage);
     final lines = this.lines;
 
     // Optimization: Use a fast-path for 100% coverage by using the `green100`
     // constant (a pre-interpolated string from `DoubleExtension`), which
     // eliminates redundant string allocations and interpolations.
     final formattedPercentage =
-        percentage == 100 ? green100 : '$color$percentage%';
+        effectivePercentage == 100 ? green100 : '$color$effectivePercentage%';
 
     final fileName = file ?? 'null';
     final sanitizedFile = fileName.sanitize();
@@ -96,9 +101,11 @@ extension RecordExtension on Record {
   List<String> toMarkdownRow({
     bool showUncovered = false,
     double minCoverage = 100.0,
+    double? percentage,
   }) {
-    final percentage = coveragePercentage;
-    final emoji = percentage.getCoverageEmoji(minCoverage: minCoverage);
+    final effectivePercentage = percentage ?? coveragePercentage;
+    final emoji =
+        effectivePercentage.getCoverageEmoji(minCoverage: minCoverage);
     final lines = this.lines;
     final fileName = file ?? 'null';
     final sanitizedFile = fileName.sanitize();
@@ -108,7 +115,7 @@ extension RecordExtension on Record {
       sanitizedFile,
       '${lines?.found ?? 0}',
       '${lines?.hit ?? 0}',
-      '$percentage%',
+      '$effectivePercentage%',
     ];
 
     if (showUncovered) {
