@@ -1,3 +1,7 @@
+## 0.8.0
+
+- **Feat**: Added `--github-annotations` (abbr: `-g`) flag to the `check` command to generate GitHub Actions warnings for uncovered lines.
+
 ## 0.7.1
 
 - **Perf**: Optimized Markdown and JSON reporting for large datasets by batching console writes and caching calculations.

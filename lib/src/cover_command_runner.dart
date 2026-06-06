@@ -21,6 +21,9 @@ const jsonFlag = 'json';
 const jsonDescription = 'Output the result in JSON format.';
 const markdownFlag = 'markdown';
 const markdownDescription = 'Output the result in Markdown format.';
+const githubAnnotationsFlag = 'github-annotations';
+const githubAnnotationsDescription =
+    'Output the result as GitHub Actions annotations.';
 const failuresOnlyArgumentName = 'failures-only';
 const defaultFailuresOnly = false;
 const failuresOnlyHelp =
@@ -49,6 +52,12 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
         abbr: 'k',
         negatable: false,
         help: markdownDescription,
+      )
+      ..addFlag(
+        githubAnnotationsFlag,
+        abbr: 'g',
+        negatable: false,
+        help: githubAnnotationsDescription,
       )
       ..addFlag(
         displayFilesArgumentName,

@@ -131,6 +131,44 @@ extension RecordExtension on Record {
 
     return buffer.toString();
   }
+
+  List<String> toGitHubAnnotations({double minCoverage = 100.0}) {
+    if (coveragePercentage >= minCoverage) return [];
+
+    final uncovered = uncoveredLines;
+    if (uncovered.isEmpty) return [];
+
+    final fileName = file ?? 'unknown';
+    final sanitizedFile = fileName.sanitize();
+    final annotations = <String>[];
+
+    var start = uncovered[0];
+    var end = uncovered[0];
+
+    final len = uncovered.length;
+    for (var i = 1; i < len; i++) {
+      final current = uncovered[i];
+      if (current == end + 1) {
+        end = current;
+      } else {
+        annotations.add(
+          '::warning file=$sanitizedFile,line=$start,endLine=$end:: '
+          'Coverage is below threshold ($minCoverage%). '
+          'Lines $start-$end are not covered.',
+        );
+        start = current;
+        end = current;
+      }
+    }
+
+    annotations.add(
+      '::warning file=$sanitizedFile,line=$start,endLine=$end:: '
+      'Coverage is below threshold ($minCoverage%). '
+      'Lines $start-$end are not covered.',
+    );
+
+    return annotations;
+  }
 }
 
 extension RecordListExtension on List<Record> {
