@@ -65,24 +65,29 @@ extension RecordExtension on Record {
     };
   }
 
-  List<Object> toRow({bool showUncovered = false, double minCoverage = 100.0}) {
-    final percentage = coveragePercentage;
-    final color = percentage.getCoverageColorAnsi(minCoverage: minCoverage);
+  List<Object> toRow({
+    bool showUncovered = false,
+    double minCoverage = 100.0,
+    double? percentage,
+  }) {
+    final currentPercentage = percentage ?? coveragePercentage;
+    final color =
+        currentPercentage.getCoverageColorAnsi(minCoverage: minCoverage);
     final lines = this.lines;
 
     // Optimization: Use a fast-path for 100% coverage by using the `green100`
     // constant (a pre-interpolated string from `DoubleExtension`), which
     // eliminates redundant string allocations and interpolations.
     final formattedPercentage =
-        percentage == 100 ? green100 : '$color$percentage%';
+        currentPercentage == 100 ? green100 : '$color$currentPercentage%';
 
     final fileName = file ?? 'null';
     final sanitizedFile = fileName.sanitize();
 
     final row = <Object>[
       '$color$sanitizedFile',
-      '$color${lines?.found}',
-      '$color${lines?.hit}',
+      '$color${lines != null ? lines.found : 0}',
+      '$color${lines != null ? lines.hit : 0}',
       formattedPercentage,
     ];
 
@@ -93,29 +98,38 @@ extension RecordExtension on Record {
     return row;
   }
 
-  List<String> toMarkdownRow({
+  String toMarkdownRow({
     bool showUncovered = false,
     double minCoverage = 100.0,
+    double? percentage,
   }) {
-    final percentage = coveragePercentage;
-    final emoji = percentage.getCoverageEmoji(minCoverage: minCoverage);
+    final currentPercentage = percentage ?? coveragePercentage;
+    final emoji = currentPercentage.getCoverageEmoji(minCoverage: minCoverage);
     final lines = this.lines;
     final fileName = file ?? 'null';
     final sanitizedFile = fileName.sanitize();
 
-    final row = [
-      emoji,
-      sanitizedFile,
-      '${lines?.found ?? 0}',
-      '${lines?.hit ?? 0}',
-      '$percentage%',
-    ];
+    final buffer = StringBuffer()
+      ..write('| ')
+      ..write(emoji)
+      ..write(' | ')
+      ..write(sanitizedFile)
+      ..write(' | ')
+      ..write(lines != null ? lines.found : 0)
+      ..write(' | ')
+      ..write(lines != null ? lines.hit : 0)
+      ..write(' | ')
+      ..write(currentPercentage)
+      ..write('% |');
 
     if (showUncovered) {
-      row.add(_formatUncoveredLines(uncoveredLines));
+      buffer
+        ..write(' ')
+        ..write(_formatUncoveredLines(uncoveredLines))
+        ..write(' |');
     }
 
-    return row;
+    return buffer.toString();
   }
 }
 

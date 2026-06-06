@@ -386,4 +386,40 @@ void main() {
       expect(tableString, contains('lib/src/api/auth_api_impl.dart'));
     },
   );
+
+  test(
+    'verify check coverage command JSON filters files with --failures-only flag',
+    () async {
+      final exitCode = await runner.run([
+        'check',
+        '--path',
+        'test/stubs/lcov_incomplete.info',
+        '--min-coverage',
+        '90',
+        '--failures-only',
+        '--json',
+      ]);
+
+      expect(exitCode, ExitCode.success.code);
+      final captured =
+          verify(() => console.writeLine(captureAny(), any())).captured;
+      final jsonOutput = captured.first as String;
+      final decoded = jsonDecode(jsonOutput) as Map<String, dynamic>;
+
+      expect(decoded['failures_only'], isTrue);
+      final files = List<Map<String, dynamic>>.from(decoded['files'] as List);
+
+      // Passing file (100% coverage >= 90%) must be filtered out
+      final hasPassing = files.any(
+        (f) => f['file'] == 'lib/src/datasources/auth_data_source.dart',
+      );
+      expect(hasPassing, isFalse);
+
+      // Failing file (87.5% coverage < 90%) must be included
+      final hasFailing = files.any(
+        (f) => f['file'] == 'lib/src/api/auth_api_impl.dart',
+      );
+      expect(hasFailing, isTrue);
+    },
+  );
 }

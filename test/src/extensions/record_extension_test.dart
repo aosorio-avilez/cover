@@ -153,7 +153,7 @@ void main() {
     });
 
     test(
-        'toMarkdownRow returns a list of 5 or 6 strings correctly formatted with emojis',
+        'toMarkdownRow returns a correctly formatted markdown row string with emojis',
         () async {
       final file = File('test_markdown.info');
       await file.writeAsString(
@@ -166,15 +166,11 @@ void main() {
       // Without showUncovered, 100% threshold
       // 50% coverage -> 🔴 emoji
       final row = record.toMarkdownRow();
-      expect(row.length, 5);
-      expect(row[0], '🔴');
-      expect(row[1], 'test.dart');
-      expect(row[4], '50.0%');
+      expect(row, '| 🔴 | test.dart | 2 | 1 | 50.0% |');
 
       // With showUncovered
       final rowWithUncovered = record.toMarkdownRow(showUncovered: true);
-      expect(rowWithUncovered.length, 6);
-      expect(rowWithUncovered[5], '1');
+      expect(rowWithUncovered, '| 🔴 | test.dart | 2 | 1 | 50.0% | 1 |');
 
       await file.delete();
     });
