@@ -21,7 +21,6 @@ jobs:
         uses: dart-lang/setup-dart@v1
         with:
           sdk: "stable"
-          cache: true
 
       - name: ⚙️ Install Tools
         run: ./.github/workflows/scripts/install-tools.sh
@@ -35,8 +34,8 @@ jobs:
       - name: 🕵️ Analyze
         run: melos run analyze
 
-      - name: 🧪 Run Tests
-        run: melos run test
+      - name: 🧪 Run Tests with Coverage
+        run: melos run coverage
 
       - name: 📊 Code Coverage
         run: melos run check-coverage
