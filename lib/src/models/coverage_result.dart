@@ -38,6 +38,7 @@ class CoverageResult {
       'files_count': files.length,
       'exclude_generated': excludeGenerated,
       'excluded_paths': excludePaths,
+      'failures_only': failuresOnly,
       'files': filesToSerialize.map((file) => file.toJson()).toList(),
     };
   }
