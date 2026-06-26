@@ -243,33 +243,52 @@ class CoverageService {
   }
 
   List<Record> _mergeRecords(List<List<Record>> recordsLists) {
-    final merged = <String, Record>{};
+    final defaultHits = <String, Record>{};
+    final mergedHits = <String, Map<int, int>>{};
+
     for (final list in recordsLists) {
       for (final record in list) {
         final file = record.file;
         if (file == null) continue;
-        if (!merged.containsKey(file)) {
-          merged[file] = record;
+
+        if (!defaultHits.containsKey(file) && !mergedHits.containsKey(file)) {
+          defaultHits[file] = record;
         } else {
-          final existing = merged[file]!;
-          final existingDetails = existing.lines?.details ?? [];
-          final incomingDetails = record.lines?.details ?? [];
-          final lineHits = <int, int>{};
-          for (final d in existingDetails) {
-            if (d.line != null) {
-              lineHits[d.line!] = (lineHits[d.line!] ?? 0) + (d.hit ?? 0);
+          final lineHits = mergedHits.putIfAbsent(file, () {
+            final existing = defaultHits.remove(file)!;
+            final hits = <int, int>{};
+            final existingDetails = existing.lines?.details;
+            if (existingDetails != null) {
+              final len = existingDetails.length;
+              for (var i = 0; i < len; i++) {
+                final d = existingDetails[i];
+                if (d.line != null) {
+                  hits[d.line!] = (hits[d.line!] ?? 0) + (d.hit ?? 0);
+                }
+              }
+            }
+            return hits;
+          });
+
+          final incomingDetails = record.lines?.details;
+          if (incomingDetails != null) {
+            final len = incomingDetails.length;
+            for (var i = 0; i < len; i++) {
+              final d = incomingDetails[i];
+              if (d.line != null) {
+                lineHits[d.line!] = (lineHits[d.line!] ?? 0) + (d.hit ?? 0);
+              }
             }
           }
-          for (final d in incomingDetails) {
-            if (d.line != null) {
-              lineHits[d.line!] = (lineHits[d.line!] ?? 0) + (d.hit ?? 0);
-            }
-          }
-          merged[file] = _createRecord(file, lineHits);
         }
       }
     }
-    return merged.values.toList();
+
+    final result = defaultHits.values.toList();
+    for (final entry in mergedHits.entries) {
+      result.add(_createRecord(entry.key, entry.value));
+    }
+    return result;
   }
 
   Future<void> _parseJsonCoverageFile(
