@@ -1,3 +1,7 @@
+## 0.8.1
+
+- **Perf**: Optimize memory footprint when merging multiple coverage files.
+
 ## 0.8.0
 
 - **Feat**: Added `--github-annotations` (abbr: `-g`) flag to the `check` command to generate GitHub Actions warnings for uncovered lines.
