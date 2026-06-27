@@ -64,7 +64,5 @@ Generate a Markdown Artifact named `release_preparation_report.md` with the foll
 
 ### Next Steps
 1. **Manual Review:** Verify the changes in `CHANGELOG.md` and `pubspec.yaml`.
-2. **Commit & Tag:** `git commit -am "chore(release): prepare vX.Y.Z" && git tag vX.Y.Z`
-3. **Push:** `git push origin main --tags`
-4. **Publish:** Run `fvm dart pub publish` to finalize.
+2. **Commit:** `git commit -am "chore(release): prepare vX.Y.Z"`
 </output_format>
