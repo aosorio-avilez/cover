@@ -464,6 +464,8 @@ void main() {
       () async {
         final exitCode = await runner.run([
           'check',
+          '--path',
+          'test/stubs/lcov_complete.info',
           '--file-min-coverage',
           'invalid',
         ]);
@@ -477,8 +479,40 @@ void main() {
       () async {
         final exitCode = await runner.run([
           'check',
+          '--path',
+          'test/stubs/lcov_complete.info',
           '--file-min-coverage',
           '105',
+        ]);
+
+        expect(exitCode, ExitCode.usage.code);
+      },
+    );
+
+    test(
+      'verify check coverage command returns usage error for negative file-min-coverage',
+      () async {
+        final exitCode = await runner.run([
+          'check',
+          '--path',
+          'test/stubs/lcov_complete.info',
+          '--file-min-coverage',
+          '-5',
+        ]);
+
+        expect(exitCode, ExitCode.usage.code);
+      },
+    );
+
+    test(
+      'verify check coverage command returns usage error for NaN file-min-coverage',
+      () async {
+        final exitCode = await runner.run([
+          'check',
+          '--path',
+          'test/stubs/lcov_complete.info',
+          '--file-min-coverage',
+          'NaN',
         ]);
 
         expect(exitCode, ExitCode.usage.code);
