@@ -196,6 +196,8 @@ class CoverageService {
       }
     }
 
+    final recordsLists = <List<Record>>[];
+
     final jsonFiles = filesList.where((f) => f.path.endsWith('.json')).toList();
     if (jsonFiles.isNotEmpty) {
       final packageName = await _getPackageName();
@@ -205,23 +207,28 @@ class CoverageService {
         try {
           await _parseJsonCoverageFile(jsonFile, packageName, mergedHits);
         } catch (_) {
-          rethrow;
+          // Ignore malformed JSON files during directory scan
         }
       }
 
-      final files =
-          mergedHits.entries.map((e) => _createRecord(e.key, e.value)).toList();
+      if (mergedHits.isNotEmpty) {
+        final files = mergedHits.entries
+            .map((e) => _createRecord(e.key, e.value))
+            .toList();
 
-      return _filterRecords(
-        files,
-        excludedPaths,
-        excludeGenerated: excludeGenerated,
-      );
+        final filteredFiles = _filterRecords(
+          files,
+          excludedPaths,
+          excludeGenerated: excludeGenerated,
+        );
+        if (filteredFiles.isNotEmpty) {
+          recordsLists.add(filteredFiles);
+        }
+      }
     }
 
     final infoFiles = filesList.where((f) => f.path.endsWith('.info')).toList();
     if (infoFiles.isNotEmpty) {
-      final recordsLists = <List<Record>>[];
       for (final infoFile in infoFiles) {
         try {
           final records = await _parseCoverageFile(
@@ -229,17 +236,22 @@ class CoverageService {
             excludedPaths,
             excludeGenerated: excludeGenerated,
           );
-          recordsLists.add(records);
+          if (records.isNotEmpty) {
+            recordsLists.add(records);
+          }
         } catch (_) {
-          rethrow;
+          // Ignore malformed info files during directory scan
         }
       }
-      return _mergeRecords(recordsLists);
     }
 
-    throw FormatException(
-      'No coverage files found in directory: ${directory.path}',
-    );
+    if (recordsLists.isEmpty) {
+      throw FormatException(
+        'No coverage files found in directory: ${directory.path}',
+      );
+    }
+
+    return _mergeRecords(recordsLists);
   }
 
   List<Record> _mergeRecords(List<List<Record>> recordsLists) {
