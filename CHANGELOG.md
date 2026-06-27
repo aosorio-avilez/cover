@@ -1,3 +1,7 @@
+## 0.8.2
+
+- **Fix**: Prevent crash when parsing directories containing non-coverage JSON or malformed files, and support combined parsing of JSON and LCOV info files.
+
 ## 0.8.1
 
 - **Perf**: Optimize memory footprint when merging multiple coverage files.
