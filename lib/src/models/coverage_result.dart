@@ -15,6 +15,7 @@ class CoverageResult {
 
   Map<String, dynamic> toJson({
     required double minCoverage,
+    double? fileMinCoverage,
     List<String> excludePaths = const [],
     bool excludeGenerated = false,
     bool failuresOnly = false,
@@ -23,17 +24,30 @@ class CoverageResult {
         ? (coverage - baselineCoverage!).roundToDoubleWithPrecision(2)
         : null;
 
+    final threshold = fileMinCoverage ?? minCoverage;
     final filesToSerialize = failuresOnly
-        ? files.where((f) => f.coveragePercentage < minCoverage).toList()
+        ? files.where((f) => f.coveragePercentage < threshold).toList()
         : files;
+
+    var passedFileMinCoverage = true;
+    if (fileMinCoverage != null) {
+      for (final file in files) {
+        if (file.coveragePercentage < fileMinCoverage) {
+          passedFileMinCoverage = false;
+          break;
+        }
+      }
+    }
 
     return {
       'coverage': coverage,
       'min_coverage': minCoverage,
+      if (fileMinCoverage != null) 'file_min_coverage': fileMinCoverage,
       'baseline_coverage': baselineCoverage,
       'delta': delta,
       'passed': coverage >= minCoverage &&
-          (baselineCoverage == null || coverage >= baselineCoverage!),
+          (baselineCoverage == null || coverage >= baselineCoverage!) &&
+          passedFileMinCoverage,
       'timestamp': DateTime.now().toIso8601String(),
       'files_count': files.length,
       'exclude_generated': excludeGenerated,
