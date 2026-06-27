@@ -1,3 +1,7 @@
+## 0.9.0
+
+- **Feat**: Added `--file-min-coverage` (abbr: `-c`) option to the `check` command to enforce a minimum coverage percentage on individual files.
+
 ## 0.8.2
 
 - **Fix**: Prevent crash when parsing directories containing non-coverage JSON or malformed files, and support combined parsing of JSON and LCOV info files.

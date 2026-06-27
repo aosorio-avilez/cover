@@ -28,6 +28,9 @@ const failuresOnlyArgumentName = 'failures-only';
 const defaultFailuresOnly = false;
 const failuresOnlyHelp =
     'Filter the report to show only files failing the coverage threshold.';
+const fileMinCoverageArgumentName = 'file-min-coverage';
+const fileMinCoverageHelp =
+    'Enforce a minimum coverage percentage for individual files.';
 
 class CoverCommandRunner extends CompletionCommandRunner<int> {
   CoverCommandRunner({Console? console, CoverageService? service})
@@ -102,6 +105,11 @@ class CoverCommandRunner extends CompletionCommandRunner<int> {
         abbr: 'f',
         help: failuresOnlyHelp,
         negatable: false,
+      )
+      ..addOption(
+        fileMinCoverageArgumentName,
+        abbr: 'c',
+        help: fileMinCoverageHelp,
       );
 
     addCommand(CheckCoverageCommand(_console, service: coverageService));

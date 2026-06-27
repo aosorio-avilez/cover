@@ -140,5 +140,24 @@ void main() {
       expect(output, contains('- **Baseline:** 100.0%'));
       expect(output, contains('- **Delta:** -5.48%'));
     });
+
+    test('verify markdown output with --markdown and --file-min-coverage',
+        () async {
+      final exitCode = await runner.run([
+        'check',
+        '--path',
+        'test/stubs/lcov_incomplete.info',
+        '--markdown',
+        '--file-min-coverage',
+        '80',
+      ]);
+
+      expect(exitCode, ExitCode.fail.code);
+
+      final captured = verify(() => console.write(captureAny())).captured;
+      final output = captured.join('\n');
+
+      expect(output, contains('- **Minimum File Required:** 80.0%'));
+    });
   });
 }

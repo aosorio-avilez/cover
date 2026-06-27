@@ -86,6 +86,7 @@ class CheckCoverageCommand extends Command<int> {
       );
 
       final githubAnnotations = getGitHubAnnotationsArgument();
+      final fileMinCoverage = getFileMinCoverageArgument();
 
       _displayResult(
         result,
@@ -93,6 +94,7 @@ class CheckCoverageCommand extends Command<int> {
         isMarkdown: isMarkdown,
         githubAnnotations: githubAnnotations,
         minCoverage: minCoverage,
+        fileMinCoverage: fileMinCoverage,
         excludePaths: excludePaths,
         excludeGenerated: excludeGenerated,
         displayFiles: displayFiles,
@@ -104,7 +106,17 @@ class CheckCoverageCommand extends Command<int> {
       final passedBaseline = result.baselineCoverage == null ||
           result.coverage >= result.baselineCoverage!;
 
-      return passedMinCoverage && passedBaseline
+      var passedFileMinCoverage = true;
+      if (fileMinCoverage != null) {
+        for (final record in result.files) {
+          if (record.coveragePercentage < fileMinCoverage) {
+            passedFileMinCoverage = false;
+            break;
+          }
+        }
+      }
+
+      return passedMinCoverage && passedBaseline && passedFileMinCoverage
           ? ExitCode.success.code
           : ExitCode.fail.code;
       // ignore: avoid_catching_errors
@@ -148,6 +160,7 @@ class CheckCoverageCommand extends Command<int> {
     required bool displayFiles,
     required bool showUncovered,
     required bool failuresOnly,
+    double? fileMinCoverage,
   }) {
     final currentCoverage = result.coverage;
 
@@ -155,6 +168,7 @@ class CheckCoverageCommand extends Command<int> {
       final jsonOutput = const JsonEncoder.withIndent('  ').convert(
         result.toJson(
           minCoverage: minCoverage,
+          fileMinCoverage: fileMinCoverage,
           excludePaths: excludePaths,
           excludeGenerated: excludeGenerated,
           failuresOnly: failuresOnly,
@@ -164,7 +178,7 @@ class CheckCoverageCommand extends Command<int> {
     } else if (githubAnnotations) {
       for (final record in result.files) {
         final annotations =
-            record.toGitHubAnnotations(minCoverage: minCoverage);
+            record.toGitHubAnnotations(minCoverage: fileMinCoverage ?? minCoverage);
         for (final annotation in annotations) {
           console.writeLine(annotation);
         }
@@ -173,6 +187,7 @@ class CheckCoverageCommand extends Command<int> {
       _displayMarkdownResult(
         result,
         minCoverage: minCoverage,
+        fileMinCoverage: fileMinCoverage,
         displayFiles: displayFiles,
         showUncovered: showUncovered,
         failuresOnly: failuresOnly,
@@ -185,13 +200,14 @@ class CheckCoverageCommand extends Command<int> {
         final table = buildCoverageFileTable(showUncovered: showUncovered);
         for (final record in result.files) {
           final percentage = record.coveragePercentage;
-          if (failuresOnly && percentage >= minCoverage) {
+          final threshold = fileMinCoverage ?? minCoverage;
+          if (failuresOnly && percentage >= threshold) {
             continue;
           }
           table.insertRow(
             record.toRow(
               showUncovered: showUncovered,
-              minCoverage: minCoverage,
+              minCoverage: threshold,
               percentage: percentage,
             ),
           );
@@ -203,6 +219,12 @@ class CheckCoverageCommand extends Command<int> {
       console
         ..writeLine('Minimum coverage: $greenColor$minCoverage%\x1B[0m')
         ..resetColorAttributes();
+
+      if (fileMinCoverage != null) {
+        console
+          ..writeLine('Minimum file coverage: $greenColor$fileMinCoverage%\x1B[0m')
+          ..resetColorAttributes();
+      }
 
       if (result.baselineCoverage != null) {
         final baseline = result.baselineCoverage!;
@@ -230,6 +252,7 @@ class CheckCoverageCommand extends Command<int> {
     required bool displayFiles,
     required bool showUncovered,
     required bool failuresOnly,
+    double? fileMinCoverage,
   }) {
     final currentCoverage = result.coverage;
     final emoji = currentCoverage.getCoverageEmoji(minCoverage: minCoverage);
@@ -243,8 +266,12 @@ class CheckCoverageCommand extends Command<int> {
       ..writeln()
       ..writeln('- **Total Coverage:** $currentCoverage%')
       ..writeln('- **Progress:** `$progressBar`')
-      ..writeln('- **Minimum Required:** $minCoverage%')
-      ..writeln();
+      ..writeln('- **Minimum Required:** $minCoverage%');
+
+    if (fileMinCoverage != null) {
+      buffer.writeln('- **Minimum File Required:** $fileMinCoverage%');
+    }
+    buffer.writeln();
 
     if (result.baselineCoverage != null) {
       final baseline = result.baselineCoverage!;
@@ -281,14 +308,15 @@ class CheckCoverageCommand extends Command<int> {
 
       for (final record in result.files) {
         final percentage = record.coveragePercentage;
-        if (failuresOnly && percentage >= minCoverage) {
+        final threshold = fileMinCoverage ?? minCoverage;
+        if (failuresOnly && percentage >= threshold) {
           continue;
         }
 
         buffer.writeln(
           record.toMarkdownRow(
             showUncovered: showUncovered,
-            minCoverage: minCoverage,
+            minCoverage: threshold,
             percentage: percentage,
           ),
         );
@@ -412,5 +440,29 @@ class CheckCoverageCommand extends Command<int> {
   bool getFailuresOnlyArgument() {
     return globalResults?[failuresOnlyArgumentName] as bool? ??
         defaultFailuresOnly;
+  }
+
+  double? getFileMinCoverageArgument() {
+    final fileMinCoverageArg =
+        globalResults?[fileMinCoverageArgumentName] as String?;
+
+    if (fileMinCoverageArg == null || fileMinCoverageArg.isEmpty) {
+      return null;
+    }
+
+    final fileMinCoverage = double.tryParse(fileMinCoverageArg);
+
+    if (fileMinCoverage == null ||
+        fileMinCoverage.isNaN ||
+        fileMinCoverage < 0 ||
+        fileMinCoverage > 100) {
+      throw UsageException(
+        'Invalid value for --$fileMinCoverageArgumentName. '
+            'Expected a number between 0 and 100.',
+        '--$fileMinCoverageArgumentName $fileMinCoverageArg',
+      );
+    }
+
+    return fileMinCoverage;
   }
 }

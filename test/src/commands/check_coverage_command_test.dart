@@ -422,4 +422,151 @@ void main() {
       expect(hasFailing, isTrue);
     },
   );
+
+  group('file-min-coverage tests', () {
+    test(
+      'verify check coverage command fails when a file is below file-min-coverage',
+      () async {
+        final exitCode = await runner.run([
+          'check',
+          '--path',
+          'test/stubs/lcov_incomplete.info', // overall 94.52%
+          '--min-coverage',
+          '90',
+          '--file-min-coverage',
+          '60', // forgot_password_page has 51.85%
+        ]);
+
+        expect(exitCode, ExitCode.fail.code);
+        verify(() => console.writeLine(any(), any())).called(3); // min, min file, current
+      },
+    );
+
+    test(
+      'verify check coverage command succeeds when all files are above file-min-coverage',
+      () async {
+        final exitCode = await runner.run([
+          'check',
+          '--path',
+          'test/stubs/lcov_incomplete.info', // overall 94.52%
+          '--min-coverage',
+          '90',
+          '--file-min-coverage',
+          '50', // lowest is forgot_password_page at 51.85%
+        ]);
+
+        expect(exitCode, ExitCode.success.code);
+      },
+    );
+
+    test(
+      'verify check coverage command returns usage error for invalid file-min-coverage',
+      () async {
+        final exitCode = await runner.run([
+          'check',
+          '--path',
+          'test/stubs/lcov_complete.info',
+          '--file-min-coverage',
+          'invalid',
+        ]);
+
+        expect(exitCode, ExitCode.usage.code);
+      },
+    );
+
+    test(
+      'verify check coverage command returns usage error for out-of-range file-min-coverage',
+      () async {
+        final exitCode = await runner.run([
+          'check',
+          '--path',
+          'test/stubs/lcov_complete.info',
+          '--file-min-coverage',
+          '105',
+        ]);
+
+        expect(exitCode, ExitCode.usage.code);
+      },
+    );
+
+    test(
+      'verify check coverage command returns usage error for negative file-min-coverage',
+      () async {
+        final exitCode = await runner.run([
+          'check',
+          '--path',
+          'test/stubs/lcov_complete.info',
+          '--file-min-coverage',
+          '-5',
+        ]);
+
+        expect(exitCode, ExitCode.usage.code);
+      },
+    );
+
+    test(
+      'verify check coverage command returns usage error for NaN file-min-coverage',
+      () async {
+        final exitCode = await runner.run([
+          'check',
+          '--path',
+          'test/stubs/lcov_complete.info',
+          '--file-min-coverage',
+          'NaN',
+        ]);
+
+        expect(exitCode, ExitCode.usage.code);
+      },
+    );
+
+    test(
+      'verify check coverage command JSON includes file_min_coverage state',
+      () async {
+        final exitCode = await runner.run([
+          'check',
+          '--path',
+          'test/stubs/lcov_incomplete.info',
+          '--json',
+          '--min-coverage',
+          '90',
+          '--file-min-coverage',
+          '50',
+        ]);
+
+        expect(exitCode, ExitCode.success.code);
+        final captured =
+            verify(() => console.writeLine(captureAny(), any())).captured;
+        final jsonOutput = captured.first as String;
+        final decoded = jsonDecode(jsonOutput) as Map<String, dynamic>;
+
+        expect(decoded['file_min_coverage'], 50.0);
+        expect(decoded['passed'], isTrue);
+      },
+    );
+
+    test(
+      'verify check coverage command JSON fails passed state when below file_min_coverage',
+      () async {
+        final exitCode = await runner.run([
+          'check',
+          '--path',
+          'test/stubs/lcov_incomplete.info',
+          '--json',
+          '--min-coverage',
+          '90',
+          '--file-min-coverage',
+          '60',
+        ]);
+
+        expect(exitCode, ExitCode.fail.code);
+        final captured =
+            verify(() => console.writeLine(captureAny(), any())).captured;
+        final jsonOutput = captured.first as String;
+        final decoded = jsonDecode(jsonOutput) as Map<String, dynamic>;
+
+        expect(decoded['file_min_coverage'], 60.0);
+        expect(decoded['passed'], isFalse);
+      },
+    );
+  });
 }

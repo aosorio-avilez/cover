@@ -40,6 +40,9 @@ $ cover check
 # Enforce minimum coverage and show missing lines
 $ cover check --min-coverage 90 --show-uncovered
 
+# Enforce minimum individual file coverage
+$ cover check --file-min-coverage 80
+
 # Ignore generated files and exclude specific paths
 $ cover check --exclude-generated --excluded-paths "lib/generated, lib/src/legacy"
 
@@ -59,6 +62,7 @@ $ cover check --baseline coverage/lcov.base.info
 | :--- | :--- | :--- | :--- |
 | `--path` | `-p` | Path to the `lcov.info` file | `coverage/lcov.info` |
 | `--min-coverage` | `-m` | Minimum required coverage percentage | `100.0` |
+| `--file-min-coverage` | `-c` | Enforce minimum coverage on individual files | `null` |
 | `--show-uncovered`| `-u` | Displays line numbers for missing coverage | `false` |
 | `--exclude-generated`| | Ignores `.g.dart`, `.freezed.dart`, etc. | `false` |
 | `--excluded-paths`| `-e` | Comma-separated paths to exclude | `""` |
